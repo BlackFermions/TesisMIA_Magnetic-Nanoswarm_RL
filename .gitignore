@@ -1,0 +1,32 @@
+# Entornos y cachés de Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Datos pesados (se reproducen con data/checksums.sha256)
+data/raw/**
+data/fields/**
+!data/raw/**/
+!data/fields/**/
+!**/.gitkeep
+
+# Salidas de experimentos
+experiments/**/policy/
+experiments/**/tensorboard/
+
+# Salidas de SimVascular / svSolver
+cfd/simvascular/**/*.vtu
+cfd/simvascular/**/*.vtp
+cfd/simvascular/**/*-procs_case/
+
+# Sistema y editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
