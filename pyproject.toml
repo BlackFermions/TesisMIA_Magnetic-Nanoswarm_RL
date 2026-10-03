@@ -7,7 +7,6 @@ name = "nanoswarm"
 version = "0.1.0"
 description = "Direccionamiento de enjambres de nanopartículas magnéticas con aprendizaje por refuerzo en entornos vasculares simulados"
 readme = "README.md"
-license = { text = "MIT" }
 authors = [{ name = "Brayan Bruce Pérez Escobar" }]
 requires-python = ">=3.10"
 dependencies = [
