@@ -100,11 +100,3 @@ python scripts/eda.py                                     # ~4 min
 - **Versionado:** cada log registra la fecha, el commit de git, las versiones de los paquetes y la configuración completa. Las dependencias están congeladas en `requirements.txt`.
 - **Salidas:** `logs/metrics_*.txt`, `results/tables/*.csv` y `results/figures/*.png`.
 
-## 7. Guion de la mini-demo (5–8 min)
-
-1. **Contexto (1 min):** el problema, η y el paper base.
-2. **EDA (2 min):** Fig. 1 y Fig. 3, los dos hallazgos y el riesgo de la recompensa explotable.
-3. **Baseline (1 min):** por qué sin fuerza, aleatoria y heurísticas, y por qué PPO no.
-4. **Resultado (1 min):** η = 0.95 de la heurística rama frente a 0.49 del reparto natural, y la heurística perpendicular de 0.00 en R2 a 0.88 en R4 (Fig. 2).
-5. **Reproducibilidad (1 min):** dos comandos y dónde quedan los logs.
-6. **Próximos pasos (1 min):** las decisiones 1 y 2.
