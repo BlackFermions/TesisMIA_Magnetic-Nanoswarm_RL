@@ -77,12 +77,7 @@ Sobre 29 856 observaciones (4 condiciones × 4 políticas × 3 episodios). Fuent
 | 2 | **Rediseñar** R3: pulso con mayor amplitud o perfil de Womersley, para que difiera de R2 | Datos (entorno) | η de "sin fuerza" o de la heurística en R3 distinta de R2 (IC 95 % sin solapar) |
 | 3 | **Agregar** un radio finito de partícula (exclusión de pared) | Datos (entorno) | El atasco en R2 persiste o desaparece; se reporta η de la heurística perpendicular antes y después |
 
-**Además (menores):**
-- Medir η al terminar el episodio sin cortar al 95 %, o reportar η sobre las partículas que salieron.
-- Usar la heurística rama como referencia principal del baseline, ya que la perpendicular del README falla.
-- Fijar N = 200 (desviación estándar de η ≤ 0.033) y $v_{mag}$ = 0.3.
-- Normalizar la observación antes de entrenar PPO.
-- Extraer ángulos y razones de diámetro de bifurcaciones reales del VMR para fijar los rangos de la geometría (ver [bitácora](bitacora.md), punto 8).
+
 
 ## 6. Reproducibilidad
 
