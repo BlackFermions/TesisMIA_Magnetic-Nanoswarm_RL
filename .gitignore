@@ -30,3 +30,7 @@ cfd/simvascular/**/*-procs_case/
 Thumbs.db
 .vscode/
 .idea/
+
+# Material de clase (PDFs y tareas, solo local)
+docs/clases y tareas/
+docs/Paper/
