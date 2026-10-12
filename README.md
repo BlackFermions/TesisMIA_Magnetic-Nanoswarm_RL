@@ -2,6 +2,11 @@
 
 **Evaluación del impacto de la fidelidad física de entornos vasculares simulados en el direccionamiento autónomo de enjambres de nanopartículas magnéticas mediante aprendizaje por refuerzo**
 
+1. Generalización de Políticas de Aprendizaje por Refuerzo ante Diferentes Niveles de Fidelidad de Simulación: Aplicación al Direccionamiento de Enjambres Magnéticos
+
+2. Aprendizaje Curricular de Fidelidad para Mejorar la Generalización de Políticas de Aprendizaje por Refuerzo en Entornos Físicos Simulados
+
+
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Gymnasium](https://img.shields.io/badge/env-Gymnasium-green.svg)](https://gymnasium.farama.org/)
 
