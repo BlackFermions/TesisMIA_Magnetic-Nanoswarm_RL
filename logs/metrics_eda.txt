@@ -1,0 +1,92 @@
+# EDA del entorno
+
+## Metadatos
+{
+  "fecha": "2026-10-09T19:21:02",
+  "git_commit": "54bb362 (con cambios sin commit)",
+  "python": "3.12.7",
+  "plataforma": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.5.3",
+  "gymnasium": "1.4.0",
+  "pandas": "3.0.6"
+}
+
+## Configuración
+{
+  "baseline_tag": "baseline",
+  "episodes_por_punto": 10,
+  "seed_base": 1000,
+  "physics_por_defecto": {
+    "u_max": 1.0,
+    "pulse_amplitude": 0.5,
+    "pulse_period": 4.0,
+    "v_mag": 0.3,
+    "diffusion": 0.01,
+    "dt": 0.05
+  }
+}
+
+## Calidad de la observación (29856 observaciones, 4 condiciones x 4 políticas)
+     variable    min   max  media  desv  no_finitos
+   centroid_x -4.999 3.213 -1.071 2.696           0
+   centroid_y -2.251 2.431  0.320 0.742           0
+     spread_x  0.000 2.174  0.830 0.670           0
+     spread_y  0.001 1.948  0.544 0.444           0
+  frac_target  0.000 0.985  0.150 0.226           0
+   frac_other  0.000 0.525  0.084 0.157           0
+  frac_active  0.015 1.000  0.766 0.348           0
+    phase_sin -1.000 1.000  0.013 0.707           0
+    phase_cos -1.000 1.000  0.003 0.707           0
+prev_action_x -0.988 0.999  0.183 0.450           0
+prev_action_y -0.994 1.000  0.152 0.396           0
+
+## Barrido de v_mag (η media)
+policy           heur_branch  heur_perp  zero
+condition v_mag                              
+R2        0.01         0.440      0.458 0.469
+          0.03         0.426      0.374 0.469
+          0.10         0.423      0.301 0.469
+          0.30         0.951      0.000 0.469
+          1.00         0.962      0.427 0.469
+R4        0.01         0.508      0.493 0.482
+          0.03         0.548      0.522 0.482
+          0.10         0.706      0.637 0.482
+          0.30         0.919      0.882 0.482
+          1.00         0.958      0.936 0.482
+
+## Convergencia en N (R4, desviación estándar de η)
+policy       heur_branch  zero
+n_particles                   
+25                 0.040 0.099
+50                 0.025 0.059
+100                0.018 0.036
+200                0.012 0.033
+400                0.009 0.024
+
+## Alineación recompensa-métrica (Spearman entre retorno y η, por condición)
+condition  spearman_retorno_eta
+       R1                 0.812
+       R2                 0.723
+       R3                 0.657
+       R4                 0.933
+
+## Componentes medios de la recompensa
+condition      policy   eta  return  r_progress  r_target  r_other  r_effort
+       R1        zero 0.000   0.000       0.000     0.000    0.000     0.000
+       R1      random 0.000  -0.232       0.011     0.000    0.000    -0.243
+       R1   heur_perp 0.000   0.000       0.000     0.000    0.000     0.000
+       R1 heur_branch 0.975   1.648       0.989     0.975    0.000    -0.316
+       R2        zero 0.488   0.582       0.556     0.488   -0.462     0.000
+       R2      random 0.477   0.371       0.548     0.477   -0.463    -0.192
+       R2   heur_perp 0.002   0.531       0.652     0.002    0.000    -0.123
+       R2 heur_branch 0.953   1.647       0.988     0.953    0.000    -0.294
+       R3        zero 0.488   0.582       0.556     0.488   -0.462     0.000
+       R3      random 0.476   0.366       0.546     0.476   -0.466    -0.190
+       R3   heur_perp 0.002   0.586       0.665     0.002    0.000    -0.080
+       R3 heur_branch 0.952   1.647       0.988     0.952    0.000    -0.293
+       R4        zero 0.479   0.556       0.548     0.479   -0.471     0.000
+       R4      random 0.468   0.408       0.539     0.468   -0.482    -0.117
+       R4   heur_perp 0.883   1.690       0.922     0.883   -0.068    -0.046
+       R4 heur_branch 0.920   1.683       0.956     0.920   -0.032    -0.161
+
+Tiempo total: 273.2 s

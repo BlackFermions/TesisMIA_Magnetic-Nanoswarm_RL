@@ -2,6 +2,11 @@
 
 **Evaluación del impacto de la fidelidad física de entornos vasculares simulados en el direccionamiento autónomo de enjambres de nanopartículas magnéticas mediante aprendizaje por refuerzo**
 
+1. Generalización de Políticas de Aprendizaje por Refuerzo ante Diferentes Niveles de Fidelidad de Simulación: Aplicación al Direccionamiento de Enjambres Magnéticos
+
+2. Aprendizaje Curricular de Fidelidad para Mejorar la Generalización de Políticas de Aprendizaje por Refuerzo en Entornos Físicos Simulados
+
+
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Gymnasium](https://img.shields.io/badge/env-Gymnasium-green.svg)](https://gymnasium.farama.org/)
 
@@ -21,7 +26,8 @@ Repositorio del proyecto de tesis de la **Maestría con mención en Inteligencia
 6. [Control experimental y reproducibilidad](#6-control-experimental-y-reproducibilidad)
 7. [Riesgos técnicos y mitigación](#7-riesgos-técnicos-y-mitigación)
 8. [Viabilidad](#8-viabilidad)
-9. [Referencias](#referencias)
+9. [Ejecución](#9-ejecución)
+10. [Referencias](#referencias)
 
 ---
 
@@ -197,6 +203,35 @@ El flujo usa herramientas abiertas (SimVascular, Python, Gymnasium (Towers et al
 3. **Finalmente:** las extensiones.
 
 Si solo se completa el núcleo, la tesis responde igualmente sus preguntas principales.
+
+## 9. Ejecución
+
+Estado actual: entorno mínimo v0.1 (bifurcación en Y 2D con flujo analítico) y políticas de referencia. Diseño en [docs/diseno_entorno.md](docs/diseno_entorno.md), resultados del primer sprint en [docs/eda_baseline.md](docs/eda_baseline.md) y decisiones en [docs/bitacora.md](docs/bitacora.md).
+
+**Instalación** (Python 3.10+, Windows PowerShell):
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+pip install -e . --no-deps
+```
+
+**Evaluación de las políticas de referencia** en R1–R4 (~2 min):
+
+```powershell
+python scripts/evaluate.py --tag baseline --episodes 30
+```
+
+Escribe `logs/metrics_baseline.txt` (metadatos, configuración y η con IC 95 %) y `results/tables/episodes_baseline.csv` (una fila por episodio). Opciones: `--policies`, `--conditions`, `--seed`, `--n-particles`, `--v-mag`.
+
+**EDA del entorno** (~4 min, requiere la evaluación anterior):
+
+```powershell
+python scripts/eda.py
+```
+
+Escribe `logs/metrics_eda.txt`, las figuras en `results/figures/` y las tablas en `results/tables/`.
 
 ## Referencias
 

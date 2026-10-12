@@ -1,0 +1,77 @@
+# Métricas: baseline
+
+## Metadatos
+{
+  "fecha": "2026-10-09T19:01:18",
+  "git_commit": "54bb362 (con cambios sin commit)",
+  "python": "3.12.7",
+  "plataforma": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.5.3",
+  "gymnasium": "1.4.0",
+  "pandas": "3.0.6"
+}
+
+## Configuración
+{
+  "tag": "baseline",
+  "policies": [
+    "zero",
+    "random",
+    "heur_perp",
+    "heur_branch"
+  ],
+  "conditions": [
+    "R1",
+    "R2",
+    "R3",
+    "R4"
+  ],
+  "episodes": 30,
+  "seed_base": 0,
+  "n_particles": 200,
+  "horizon": 800,
+  "physics": {
+    "u_max": 1.0,
+    "pulse_amplitude": 0.5,
+    "pulse_period": 4.0,
+    "v_mag": 0.3,
+    "diffusion": 0.01,
+    "dt": 0.05
+  },
+  "reward_weights": {
+    "progress": 1.0,
+    "target": 1.0,
+    "other": 1.0,
+    "effort": 0.0005
+  },
+  "geometry": {
+    "width": 1.0,
+    "parent_length": 5.0,
+    "branch_length": 4.0,
+    "theta_deg": 29.999999999999996
+  }
+}
+
+## Resultados (30 episodios por celda, IC 95 % por bootstrap)
+eta = fracción entregada a la rama objetivo (métrica central); stuck = fracción aún activa al final
+
+condition      policy  eta_mean  eta_ci_lo  eta_ci_hi  eta_other  stuck   steps  return
+       R1        zero     0.000      0.000      0.000      0.000  1.000 800.000   0.000
+       R1      random     0.000      0.000      0.000      0.000  1.000 800.000  -0.232
+       R1   heur_perp     0.000      0.000      0.000      0.000  1.000 800.000   0.000
+       R1 heur_branch     0.975      0.971      0.979      0.000  0.025 632.000   1.648
+       R2        zero     0.488      0.473      0.502      0.462  0.050 598.400   0.582
+       R2      random     0.477      0.446      0.509      0.463  0.060 630.867   0.371
+       R2   heur_perp     0.002      0.000      0.006      0.000  0.998 800.000   0.531
+       R2 heur_branch     0.953      0.952      0.955      0.000  0.047 588.333   1.647
+       R3        zero     0.488      0.473      0.502      0.462  0.050 587.067   0.582
+       R3      random     0.476      0.445      0.507      0.466  0.058 626.900   0.366
+       R3   heur_perp     0.002      0.000      0.004      0.000  0.998 800.000   0.586
+       R3 heur_branch     0.952      0.951      0.953      0.000  0.048 586.233   1.647
+       R4        zero     0.479      0.469      0.490      0.471  0.050 386.967   0.556
+       R4      random     0.468      0.444      0.493      0.482  0.049 386.533   0.408
+       R4   heur_perp     0.883      0.875      0.890      0.068  0.050 446.833   1.690
+       R4 heur_branch     0.920      0.915      0.924      0.032  0.049 321.667   1.683
+
+Datos por episodio: results/tables/episodes_baseline.csv
+Tiempo total: 228.4 s
