@@ -38,9 +38,10 @@ class PhysicsParams:
     u_max: float = 1.0  # velocidad en el centro del canal
     pulse_amplitude: float = 0.5  # A en U(t) = U_max (1 + A sin(2πt/T))
     pulse_period: float = 4.0  # T
-    v_mag: float = 0.3  # velocidad magnética máxima relativa a U_max
+    v_mag: float = 0.3  # F_max: velocidad máxima que imprime la fuerza de control, relativa a U_max
     diffusion: float = 0.01  # D, solo se usa si la condición tiene browniano
     dt: float = 0.05
+    particle_radius: float = 0.0  # a: el centro no se acerca a la pared a menos de a
 
 
 class YBifurcation:
@@ -84,8 +85,9 @@ class YBifurcation:
     def to_xy(self, seg, t, s):
         return self.origins[seg] + t[:, None] * self.tangents[seg] + s[:, None] * self.normals[seg]
 
-    def inside(self, seg, t, s):
-        ok = np.abs(s) <= self.half_width
+    def inside(self, seg, t, s, half_width=None):
+        half_width = self.half_width if half_width is None else half_width
+        ok = np.abs(s) <= half_width
         return ok & ~((seg == PARENT) & (t < 0))
 
     def distance_to_target(self, seg, t):
@@ -140,13 +142,15 @@ def step(geom, condition, params, pos, status, force, time, rng):
 
     # Paredes reflectantes: se refleja la componente lateral; en la entrada,
     # la longitudinal. Si aun así queda fuera, la partícula no se mueve.
+    # Con radio a, el centro de la partícula rebota a una distancia a de la pared.
+    wall = geom.half_width - params.particle_radius
     seg, t, s = geom.project(new)
-    out = np.abs(s) > geom.half_width
-    s = np.where(out, np.sign(s) * (geom.width - np.abs(s)), s)
+    out = np.abs(s) > wall
+    s = np.where(out, np.sign(s) * (2 * wall - np.abs(s)), s)
     t = np.where((seg == PARENT) & (t < 0), -t, t)
     new = geom.to_xy(seg, t, s)
     seg, t, s = geom.project(new)
-    bad = ~geom.inside(seg, t, s)
+    bad = ~geom.inside(seg, t, s, wall)
     new[bad] = p[bad]
     seg, t, s = geom.project(new)
 

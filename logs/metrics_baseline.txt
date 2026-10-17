@@ -2,8 +2,8 @@
 
 ## Metadatos
 {
-  "fecha": "2026-10-09T19:01:18",
-  "git_commit": "54bb362 (con cambios sin commit)",
+  "fecha": "2026-10-09T19:50:24",
+  "git_commit": "d3b58ab (con cambios sin commit)",
   "python": "3.12.7",
   "plataforma": "Windows-11-10.0.26200-SP0",
   "numpy": "2.5.3",
@@ -74,4 +74,4 @@ condition      policy  eta_mean  eta_ci_lo  eta_ci_hi  eta_other  stuck   steps 
        R4 heur_branch     0.920      0.915      0.924      0.032  0.049 321.667   1.683
 
 Datos por episodio: results/tables/episodes_baseline.csv
-Tiempo total: 228.4 s
+Tiempo total: 776.2 s

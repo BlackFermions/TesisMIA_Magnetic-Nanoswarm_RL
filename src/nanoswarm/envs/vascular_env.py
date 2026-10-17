@@ -13,7 +13,7 @@ from nanoswarm.envs.reward import RewardWeights, compute_reward, mean_distance
 class VascularEnv(gym.Env):
     """Direccionar un enjambre de N partículas hacia la rama objetivo de una Y.
 
-    Acción: a ∈ [-1, 1]², recortada a norma ≤ 1 (dirección e intensidad del imán).
+    Acción: a ∈ [-1, 1]², recortada a norma ≤ 1 (dirección e intensidad de la fuerza de control).
     Fin: sale del dominio al menos `done_fraction` del enjambre (terminated) o
     se alcanza el horizonte (truncated).
     """
@@ -48,6 +48,8 @@ class VascularEnv(gym.Env):
         self.time = 0.0
         self.steps = 0
         self.prev_action = np.zeros(2)
+        self.exit_time = np.full(self.n_particles, np.nan)  # instante de salida de cada partícula
+        self.effort_sum = 0.0  # suma de ||F||² en el episodio
         self.dist = mean_distance(self.geom, self.pos)
         return self._obs(), self._info()
 
@@ -62,6 +64,8 @@ class VascularEnv(gym.Env):
         )
         self.time += self.physics.dt
         self.steps += 1
+        self.exit_time[(prev_status == ACTIVE) & (self.status != ACTIVE)] = self.time
+        self.effort_sum += float(force @ force)
         self.dist = mean_distance(self.geom, self.pos)
 
         reward, terms = compute_reward(
@@ -87,4 +91,8 @@ class VascularEnv(gym.Env):
             "eta_other": float((self.status == AT_OTHER).mean()),
             "frac_active": float((self.status == ACTIVE).mean()),
             "steps": self.steps,
+            # Tiempo medio de tránsito de las partículas que ya salieron (NaN si ninguna)
+            "transit": float(np.nanmean(self.exit_time)) if np.isfinite(self.exit_time).any() else np.nan,
+            # Intensidad media de la fuerza de control: 0 = sin fuerza, 1 = máxima todo el tiempo
+            "effort": self.effort_sum / max(self.steps, 1),
         }

@@ -38,6 +38,8 @@ def run_episode(env, policy, seed, record_every=0):
         "eta_other": info["eta_other"],
         "frac_active": info["frac_active"],
         "steps": info["steps"],
+        "transit": info["transit"],
+        "effort": info["effort"],
         "terminated": terminated,
         "return": episode_return,
         **{f"r_{k}": v for k, v in terms_sum.items()},

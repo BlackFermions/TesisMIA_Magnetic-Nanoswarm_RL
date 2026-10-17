@@ -1,0 +1,69 @@
+# Métricas: sprint2_var3
+
+## Metadatos
+{
+  "fecha": "2026-10-16T19:17:05",
+  "git_commit": "b8fc348 (con cambios sin commit)",
+  "python": "3.12.7",
+  "plataforma": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.5.3",
+  "gymnasium": "1.4.0",
+  "pandas": "3.0.6"
+}
+
+## Configuración
+{
+  "variante": "var3",
+  "cambio": "+ pulso fuerte y lento (A = 0.9, T = 20)",
+  "particion": "reporte",
+  "semillas": "9000–9029",
+  "episodios_por_celda": 30,
+  "n_particulas": 200,
+  "horizonte": 800,
+  "fisica": {
+    "u_max": 1.0,
+    "pulse_amplitude": 0.9,
+    "pulse_period": 20.0,
+    "v_mag": 0.3,
+    "diffusion": 0.01,
+    "dt": 0.05,
+    "particle_radius": 0.05
+  },
+  "recompensa": {
+    "progress": 0.1,
+    "target": 1.0,
+    "other": 0.5,
+    "effort": 0.0001
+  }
+}
+
+## Resultados (IC 95 % por bootstrap)
+eta = fracción a la rama objetivo; perdida = a la otra rama; atascada = aún en el vaso; transito = tiempo medio de salida; esfuerzo = intensidad media de la fuerza de control (0–1)
+
+condition      policy   eta  eta_lo  eta_hi  perdida  atascada  transito  esfuerzo  retorno
+       R1        zero 0.000   0.000   0.000    0.000     1.000       NaN     0.000    0.000
+       R1      random 0.000   0.000   0.000    0.000     1.000       NaN     0.607   -0.047
+       R1   heur_perp 0.000   0.000   0.000    0.000     1.000       NaN     0.000    0.000
+       R1 heur_branch 0.980   0.977   0.983    0.000     0.020    31.346     1.000    1.015
+       R2        zero 0.469   0.462   0.477    0.481     0.050    12.922     0.000    0.283
+       R2      random 0.461   0.415   0.506    0.493     0.046    12.880     0.606    0.240
+       R2   heur_perp 0.950   0.950   0.951    0.000     0.050    24.996     0.133    1.039
+       R2 heur_branch 0.955   0.953   0.957    0.000     0.045    13.705     1.000    1.018
+       R3        zero 0.469   0.462   0.477    0.481     0.050     9.131     0.000    0.283
+       R3      random 0.488   0.452   0.524    0.469     0.042     9.289     0.605    0.282
+       R3   heur_perp 0.950   0.950   0.951    0.000     0.050    15.092     0.058    1.045
+       R3 heur_branch 0.954   0.953   0.956    0.000     0.046    10.434     1.000    1.018
+       R4        zero 0.472   0.462   0.482    0.478     0.050     7.420     0.000    0.287
+       R4      random 0.480   0.448   0.512    0.471     0.049     7.426     0.605    0.286
+       R4   heur_perp 0.835   0.826   0.844    0.115     0.050     8.125     0.127    0.862
+       R4 heur_branch 0.871   0.866   0.877    0.080     0.049     6.949     1.000    0.904
+
+## Alineación recompensa–η (Spearman por condición)
+{
+  "R1": 0.812,
+  "R2": 0.86,
+  "R3": 0.865,
+  "R4": 0.997
+}
+
+Tiempo de cómputo: 81.0 s

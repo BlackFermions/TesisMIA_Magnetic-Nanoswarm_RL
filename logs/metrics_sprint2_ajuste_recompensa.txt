@@ -1,0 +1,31 @@
+# Sprint 2: ajuste de los pesos de la recompensa (Var1)
+
+## Metadatos
+{
+  "fecha": "2026-10-16T19:12:21",
+  "git_commit": "b8fc348 (con cambios sin commit)",
+  "python": "3.12.7",
+  "plataforma": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.5.3",
+  "gymnasium": "1.4.0",
+  "pandas": "3.0.6"
+}
+
+## Configuración
+semillas de ajuste 5000–5019; física v0.1; w_e = 1, w_u = 1e-4 (regla); rejilla w_p ∈ {1, 0.5, 0.1} × w_m ∈ {1, 0.5, 0.25}
+criterio: ρ ≥ 0.9 en R2 y R3 y retorno(perp) < retorno(sin fuerza) en R2; selección: máx ρ mínima en R2–R4
+
+## Resultados
+  w_p   w_m  ρ R2  ρ R3  ρ R4  perp < sin fuerza (R2)  cumple  ρ mín
+1.000 1.000 0.589 0.586 0.996                   False   False  0.586
+1.000 0.500 0.960 0.952 0.995                    True    True  0.952
+1.000 0.250 0.979 0.977 0.994                    True    True  0.977
+0.500 1.000 0.733 0.684 0.996                   False   False  0.684
+0.500 0.500 0.980 0.974 0.994                    True    True  0.974
+0.500 0.250 0.985 0.984 0.993                    True    True  0.984
+0.100 1.000 0.796 0.792 0.995                    True   False  0.792
+0.100 0.500 0.987 0.985 0.992                    True    True  0.985
+0.100 0.250 0.986 0.983 0.988                    True    True  0.983
+
+Seleccionado: w_p = 0.1, w_m = 0.5
+Tiempo de cómputo: 71.8 s

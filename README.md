@@ -1,209 +1,221 @@
 # TesisMIA_Magnetic-Nanoswarm_RL
 
-**Evaluación del impacto de la fidelidad física de entornos vasculares simulados en el direccionamiento autónomo de enjambres de nanopartículas magnéticas mediante aprendizaje por refuerzo**
+**Generalización de políticas de aprendizaje por refuerzo ante diferentes niveles de fidelidad de simulación**
+
+*Caso de estudio: direccionamiento de enjambres de nanopartículas magnéticas en bifurcaciones vasculares.*
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Gymnasium](https://img.shields.io/badge/env-Gymnasium-green.svg)](https://gymnasium.farama.org/)
 
-Repositorio del proyecto de tesis de la **Maestría en Ciencias con mención en Inteligencia Artificial**, Unidad de Posgrado de la Facultad de Ingeniería Industrial y de Sistemas, **Universidad Nacional de Ingeniería (UNI)**.
+Tesis de la **Maestría en Ciencias con mención en Inteligencia Artificial**, Unidad de Posgrado de la Facultad de Ingeniería Industrial y de Sistemas, **Universidad Nacional de Ingeniería (UNI)**.
 
 **Alumno:** Brayan Bruce Pérez Escobar
 
 ---
 
-## Contenido
+## Cómo leer este README
 
-1. [Propósito, tipo de tesis y aporte](#1-propósito-tipo-de-tesis-y-aporte)
-2. [Diagrama del flujo principal](#2-diagrama-del-flujo-principal)
-3. [Entradas, componentes y salidas](#3-entradas-componentes-y-salidas)
-4. [Definición del problema de aprendizaje por refuerzo](#4-definición-del-problema-de-aprendizaje-por-refuerzo)
-5. [Criterio preliminar de evaluación](#5-criterio-preliminar-de-evaluación)
-6. [Control experimental y reproducibilidad](#6-control-experimental-y-reproducibilidad)
-7. [Riesgos técnicos y mitigación](#7-riesgos-técnicos-y-mitigación)
-8. [Viabilidad](#8-viabilidad)
-9. [Ejecución](#9-ejecución)
-10. [Referencias](#referencias)
+El documento sigue el orden en que se construye el proyecto. Cada paso responde una pregunta:
+
+| Paso | Pregunta que responde |
+|:---:|---|
+| [1](#paso-1-la-pregunta-de-investigación) | ¿Qué se quiere averiguar? |
+| [2](#paso-2-el-caso-de-estudio) | ¿En qué problema concreto se estudia? |
+| [3](#paso-3-los-cuatro-niveles-de-fidelidad) | ¿Qué significa "nivel de fidelidad"? |
+| [4](#paso-4-el-agente-qué-ve-qué-hace-y-qué-gana) | ¿Cómo se plantea como problema de aprendizaje por refuerzo? |
+| [5](#paso-5-los-experimentos) | ¿Qué experimentos se hacen? |
+| [6](#paso-6-cómo-se-mide) | ¿Cómo se decide qué funcionó mejor? |
+| [7](#paso-7-plan-y-estado-actual) | ¿Qué está hecho y qué falta? |
+| [8](#paso-8-cómo-ejecutarlo) | ¿Cómo reproduzco los resultados? |
+
+El planteamiento completo está en [docs/Paper/Proyecto.pdf](docs/Paper/Proyecto.pdf) y la historia de cada decisión en [docs/bitacora.md](docs/bitacora.md).
 
 ---
 
-## 1. Propósito, tipo de tesis y aporte
+## Paso 1. La pregunta de investigación
 
-La tesis es de **aprendizaje por refuerzo (RL)**. Un único controlador aplica una fuerza magnética externa, común e idealizada, sobre un enjambre diluido de $N$ nanopartículas no interactuantes que son transportadas por el flujo sanguíneo. La tarea consiste en dirigir la mayor fracción posible del enjambre hacia la **rama objetivo** a través de las bifurcaciones de geometrías vasculares tridimensionales obtenidas con SimVascular (Updegrove et al., 2017). La navegación contra el flujo queda fuera del alcance.
+**En una frase:** ¿un controlador que aprendió en un simulador sigue funcionando si se lo prueba en un simulador más realista, o menos realista?
 
-La fidelidad física se manipula mediante cuatro condiciones anidadas:
+**Por qué importa.** En aprendizaje por refuerzo (RL) casi siempre se entrena en simulación, porque es barato y seguro, y después se usa la política en un entorno distinto. Ningún simulador es perfecto, así que la política siempre enfrenta un cambio de condiciones (*simulator mismatch*). Medany et al. (2025) lo observaron al controlar microrrobots: políticas entrenadas sin flujo fallaron al aparecer el flujo. Lo resolvieron con ajustes puntuales, pero no lo estudiaron de forma sistemática. Esta tesis sí lo hace.
 
-| Condición | Descripción |
-|:---:|---|
-| **R1** | Sin flujo |
-| **R2** | Flujo estacionario |
-| **R3** | Flujo pulsátil |
-| **R4** | Flujo pulsátil con movimiento browniano |
+**Preguntas de investigación:**
 
-Trabajos recientes muestran que políticas entrenadas en simulaciones simplificadas fallan al incorporar flujo (Medany et al., 2025); por ello, el aporte de la tesis es **metodológico en RL**:
+1. **Núcleo.** ¿Cómo varía el desempeño de una política cuando se entrena en un nivel de fidelidad y se evalúa en otro?
+2. **Hipótesis principal.** Un currículo que entrena de lo simple a lo complejo (R1 → R2 → R3 → R4) produce políticas que generalizan mejor que entrenar en un único nivel.
+3. **Extensión (opcional).** ¿Una política con un modelo interno del entorno (DreamerV3, *model-based*) es más robusta que una sin modelo (PPO, *model-free*)? Si DreamerV3 resulta demasiado costoso, la tesis queda completa con 1 y 2.
 
-1. Un entorno abierto con niveles de fidelidad parametrizados y verificados.
-2. Un protocolo de evaluación cruzada, completamente en simulación, en el que cada política entrenada en una condición $R_k$ se evalúa en las cuatro condiciones R1–R4.
-3. Un currículo de fidelidad R1 → R4 (Bengio et al., 2009) comparado con el entrenamiento en condición fija.
-4. Evidencia comparativa entre PPO, *model-free* (Schulman et al., 2017), y DreamerV3, *model-based* (Hafner et al., 2025).
+> El aporte es de **inteligencia artificial** (generalización en RL). La física es el laboratorio donde se hace el experimento, no el objeto de estudio.
 
-## 2. Diagrama del flujo principal
+## Paso 2. El caso de estudio
+
+**La tarea.** Un enjambre de $N = 200$ nanopartículas magnéticas entra por un vaso sanguíneo que se divide en dos ramas (una bifurcación en Y). Una fuerza externa de control, idealizada, aplica la misma fuerza a todas las partículas. El agente decide en cada instante hacia dónde y con qué intensidad empujar, con el objetivo de que **la mayor fracción posible del enjambre salga por la rama objetivo** (la superior).
+
+![Enjambre en la bifurcación: R2 frente a R4](results/figures/fig2_enjambre_r2_vs_r4.png)
+
+*Enjambre en la bifurcación en Y con flujo estacionario (R2) y con flujo pulsátil y browniano (R4).*
+
+**Por qué este caso sirve para la pregunta.** El mismo problema se puede simular con física más o menos completa, añadiendo un fenómeno a la vez. Eso permite controlar exactamente qué cambia entre un simulador y otro.
+
+**Dónde se simula.** En dos etapas:
+
+| Etapa | Geometría | Para qué |
+|---|---|---|
+| **1 (actual)** | Bifurcación en Y en 2D con flujo analítico | Todos los experimentos de la tesis. Es rápida y permite muchas repeticiones |
+| **2 (al final)** | 1–2 anatomías reales del Vascular Model Repository, con flujo calculado en SimVascular | Comprobar que las conclusiones se sostienen con geometría y flujo realistas |
+
+## Paso 3. Los cuatro niveles de fidelidad
+
+Cada nivel agrega un fenómeno físico al anterior:
+
+| Nivel | Qué incluye | Qué agrega respecto al anterior |
+|:---:|---|---|
+| **R1** | Sin flujo | — (solo la fuerza de control mueve las partículas) |
+| **R2** | Flujo estacionario | La sangre arrastra a las partículas, siempre igual |
+| **R3** | Flujo pulsátil | La sangre late: acelera y frena con el pulso |
+| **R4** | Flujo pulsátil + movimiento browniano | Las partículas además tiemblan al azar |
+
+R1 es el simulador más simple y R4 el más realista. Las definiciones están congeladas: no cambian durante los experimentos.
+
+**Ejemplo real, del Sprint 1.** Una regla fija que empuja las partículas hacia la pared de la rama objetivo entrega **0 %** del enjambre en R2 y **88 %** en R4. La misma estrategia funciona o fracasa según el simulador. Esta tesis mide ese efecto con políticas que aprenden. Detalle en [docs/eda_baseline.md](docs/eda_baseline.md).
+
+## Paso 4. El agente: qué ve, qué hace y qué gana
+
+Un problema de RL se define por lo que el agente **observa**, las **acciones** que puede tomar y la **recompensa** que recibe.
+
+**4.1 Qué ve (observación).** Un vector de 11 números que resume el estado del enjambre:
+
+| Variables | Significado |
+|---|---|
+| Centroide $(x, y)$ | Dónde está el centro del enjambre, medido desde la bifurcación |
+| Dispersión $(x, y)$ | Qué tan esparcido está el enjambre |
+| Fracciones entregadas | Qué parte salió por la rama objetivo, por la otra rama, y cuánta sigue en el vaso |
+| Fase del pulso $(\sin\varphi, \cos\varphi)$ | En qué momento del latido está la sangre |
+| Acción anterior $(x, y)$ | Hacia dónde empujó el paso previo |
+
+**4.2 Qué hace (acción).** Elige la dirección e intensidad de la fuerza de control, $a_t \in [-1, 1]^2$, con norma máxima 1:
+
+$$
+\mathbf{F}_t = \frac{a_t}{\max(1, \lVert a_t \rVert_2)}
+$$
+
+**4.3 Cómo se mueven las partículas.** Cada partícula se mueve por la suma de tres efectos:
+
+$$
+\Delta\mathbf{x}_i = \Big[\underbrace{\mathbf{u}(\mathbf{x}_i, t)}_{\text{arrastre de la sangre}} + \underbrace{F_{\max}\,\mathbf{F}_t}_{\text{fuerza de control}}\Big]\Delta t + \underbrace{\sqrt{2D\,\Delta t}\;\boldsymbol{\xi}_i}_{\text{temblor browniano}}
+$$
+
+El arrastre vale cero en R1 y el temblor solo existe en R4. Las paredes rebotan las partículas, y cada partícula que sale por el extremo de una rama se cuenta en esa rama. El diseño completo está en [docs/diseno_entorno.md](docs/diseno_entorno.md).
+
+**4.4 Qué gana (recompensa).** Puntos por acercar el enjambre a la rama objetivo y por cada partícula entregada; castigo por las partículas que se van a la otra rama y por gastar fuerza:
+
+$$
+r_t = w_p\,\Delta \bar{d} + w_e\,\Delta \eta_{\text{obj}} - w_m\,\Delta \eta_{\text{otras}} - w_u \lVert a_t \rVert_2^2
+$$
+
+Pesos vigentes, corregidos en el Sprint 2: $w_p = 0.1$, $w_e = 1$, $w_m = 0.5$ y $w_u = 0.0001$. Con los pesos originales la recompensa se podía "engañar": daba puntos por acercar partículas que nunca llegaban.
+
+**4.5 Episodio.** Empieza con el enjambre en la entrada del vaso y termina cuando salió el 95 % del enjambre o se alcanzan 800 pasos.
+
+**4.6 Parámetros físicos vigentes (entorno v0.2).**
+- Magnitud máxima de la fuerza de control $F_{\max} = 0.3$ (fija), expresada como velocidad relativa a la de la sangre. La fuerza es idealizada: no se modela qué la produce.
+- Radio de partícula de 0.05 veces el ancho del vaso.
+- Pulso de ±90 % con período 20.
+
+La justificación de cada valor está en el [informe del Sprint 2](notebooks/sem5_avance.ipynb) y en [docs/diseno_entorno.md](docs/diseno_entorno.md).
+
+## Paso 5. Los experimentos
 
 ```mermaid
-flowchart TB
-    subgraph A["A. Construcción del entorno físico (fuera de línea)"]
-        direction LR
-        A1["Geometrías SimVascular (VMR)<br/>regiones con bifurcaciones"] --> A2["SimVascular (svSolver):<br/>flujo estacionario y<br/>pulsátil; verificación"]
-        A2 --> A3["Campos u(x, t) y distancia<br/>a pared en malla regular"]
-    end
-
-    subgraph B["B. Ciclo agente–entorno (entrenamiento)"]
-        direction LR
-        B1["Agente π<sub>θ</sub>(a<sub>t</sub> | o<sub>t</sub>)<br/>PPO / DreamerV3"] -->|"a<sub>t</sub>"| B2["Fuerza común idealizada<br/>F<sub>t</sub> = F<sub>máx</sub> a<sub>t</sub> / máx(1, ‖a<sub>t</sub>‖<sub>2</sub>)"]
-        B2 --> B3["Dinámica de N partículas<br/>(Euler–Maruyama, Δt)"]
-        B3 -->|"{x<sub>i,t+1</sub>}"| B4["Entorno Gymnasium:<br/>conteo por salida, r<sub>t</sub>, fin"]
-        B4 --> B5["Observación: estadísticas<br/>del enjambre o<sub>t+1</sub>"]
-        B5 -->|"o<sub>t+1</sub>, r<sub>t</sub>"| B6["Actualización de la<br/>política (rollouts /<br/>modelo del mundo)"]
-        B6 --> B1
-    end
-
-    subgraph C["C. Evaluación sin reentrenamiento"]
-        direction LR
-        C1["Políticas congeladas<br/>5 regímenes × semillas"] --> C2["Evaluación cruzada<br/>R1–R4 × geometrías<br/>de prueba"]
-        C2 --> C3["Métricas, IQM y modelo<br/>de efectos mixtos"]
-        C0["Líneas base: heurística<br/>geométrica y política aleatoria"] --> C2
-    end
-
-    A3 -.->|"interpolación trilineal"| B3
-    B6 --> C1
+flowchart LR
+    A["Entrenar una política<br/>en un nivel Ri<br/>(o con currículo)"] --> B["Congelar la política<br/>(ya no aprende)"]
+    B --> C["Evaluarla en<br/>R1, R2, R3 y R4"]
+    C --> D["Matriz de resultados<br/>y brecha de fidelidad"]
 ```
 
-*Figura 1: Flujo del proyecto: construcción del entorno, ciclo agente–entorno y evaluación cruzada.*
+**5.1 Matriz de evaluación cruzada (núcleo).** Se entrenan cuatro políticas con PPO, una por nivel (πR1, πR2, πR3, πR4). Cada una se evalúa en los cuatro niveles. El resultado es una tabla de 4 × 4:
 
-## 3. Entradas, componentes y salidas
+| Entrenada en ↓ / Evaluada en → | R1 | R2 | R3 | R4 |
+|---|:---:|:---:|:---:|:---:|
+| πR1 | **en casa** | → más realista | → más realista | → más realista |
+| πR2 | ← más simple | **en casa** | → más realista | → más realista |
+| πR3 | ← más simple | ← más simple | **en casa** | → más realista |
+| πR4 | ← más simple | ← más simple | ← más simple | **en casa** |
 
-| Etapa | Recibe | Produce |
-|---|---|---|
-| **Geometrías** (SimVascular) | Modelos del Vascular Model Repository de SimVascular (Wilson et al., 2013) (anatomía, paciente y licencia documentados) | Regiones de interés con bifurcaciones, línea central y malla generadas en SimVascular; partición por paciente en entrenamiento, validación y prueba |
-| **Hemodinámica** (svSolver de SimVascular) | Malla, propiedades del fluido, caudal constante o pulsátil, salidas RCR | Campos de velocidad por condición, verificados (Hagen–Poiseuille, malla, paso temporal, masa) |
-| **Régimen físico** | Radio de partícula, viscosidad, temperatura, $F_{\max}$, caudal | $Re_p$, Péclet, Womersley y $ML/R$ con $M = F_{\max}/(\zeta U)$; escala y parámetros justificados |
-| **Validación** | Experimento publicado de direccionamiento magnético en una bifurcación en Y | Error entre la fracción simulada y la reportada por rama |
-| **Entorno RL** | Campos, geometría, condición $R_k$, semilla | Transiciones $(o_t, a_t, r_t, o_{t+1})$ y registro por episodio |
-| **Entrenamiento** | Algoritmo, régimen, semilla, presupuesto fijo de interacciones | Política congelada, curva de aprendizaje y costo computacional |
-| **Evaluación** | Políticas, líneas base, condiciones y geometrías de prueba | Métricas por episodio, análisis estadístico y tablas reproducibles |
-
-## 4. Definición del problema de aprendizaje por refuerzo
-
-**Entorno.** Cada partícula evoluciona según
+La **brecha de fidelidad** mide cuánto cae el desempeño cuando la política sale de su nivel:
 
 $$
-d\mathbf{x}_i = \left[\mathbf{u}(\mathbf{x}_i, t) + \frac{\mathbf{F}_t}{\zeta}\right] dt + \sqrt{2D}\, d\mathbf{W}_i ,
+\text{Gap}(i \to j) = \eta(\pi_{R_i} \text{ evaluada en } R_i) - \eta(\pi_{R_i} \text{ evaluada en } R_j)
 $$
 
-integrada con Euler–Maruyama de forma vectorizada. El flujo se anula en R1 y el término browniano solo se activa en R4. Las paredes son reflectantes y cada partícula que abandona el dominio se contabiliza en la salida correspondiente.
+*Ejemplo:* si πR1 entrega 90 % en R1 y 40 % en R4, su brecha hacia R4 es de 50 puntos.
 
-**Observación.** Vector de dimensión fija con:
-- el centroide del enjambre relativo a la próxima bifurcación;
-- su dispersión (desviaciones principales);
-- la dirección de la línea central hacia la rama objetivo;
-- la velocidad media del flujo en el centroide;
-- las fracciones ya entregadas por salida;
-- la fase pulsátil $(\sin\varphi_t, \cos\varphi_t)$;
-- la acción previa.
+La matriz responde: ¿cuánto se degrada PPO?, ¿en qué dirección?, ¿entrenar en un nivel simple sirve para uno realista?, ¿y al revés?
 
-Se trata de observación idealizada; no se evalúa la localización del enjambre.
+**5.2 Currículo de fidelidad (hipótesis principal).** Una quinta política se entrena pasando por los niveles en orden, como en el colegio: primero lo fácil.
 
-**Acción.** $a_t \in [-1, 1]^3$, transformada en una fuerza común de magnitud máxima $F_{\max}$,
+1. Empieza a entrenar en R1.
+2. Pasa al siguiente nivel cuando su η en validación supera un umbral τ en 3 evaluaciones seguidas, o cuando agota el tope de entrenamiento de ese nivel (para que nunca se quede atascada).
+3. Repite hasta terminar en R4.
 
-$$
-\mathbf{F}_t = F_{\max}\, \frac{a_t}{\max(1, \lVert a_t \rVert_2)} ,
-$$
+Para que la comparación sea justa, usa el **mismo presupuesto total de entrenamiento** que las políticas de un solo nivel. El umbral τ y el tope se fijan en el piloto.
 
-igual para todos los algoritmos y verificada mediante $ML/R$.
+**Criterio de éxito:** el currículo gana si su η promedio en R1–R4 es mayor que el de πR4, la política entrenada solo en el nivel final.
 
-**Recompensa.**
+**5.3 PPO frente a DreamerV3 (extensión).** Se repite la matriz con DreamerV3 (Hafner et al., 2025), que aprende un modelo interno del entorno, y se compara con PPO (Schulman et al., 2017), que no lo tiene.
 
-$$
-r_t = w_p\, \Delta \bar{d}_{\text{vasc}} + w_e\, \Delta \eta_{\text{obj}} - w_m\, \Delta \eta_{\text{otras}} - w_u \lVert a_t \rVert_2^2
-$$
+**Referencias de comparación.** En todos los experimentos se reportan también políticas sin aprendizaje: no empujar (el reparto natural del flujo), empujar al azar y dos reglas geométricas fijas.
 
-donde $\Delta \bar{d}_{\text{vasc}}$ es la reducción de la distancia vascular media de las partículas activas hacia la salida objetivo y $\Delta\eta$ el incremento de la fracción entregada a la rama objetivo o a otras salidas. La distancia se mide sobre la línea central y no en línea recta. Los pesos se fijan en la prueba piloto con análisis de sensibilidad, se verifica que la línea base obtenga un comportamiento razonable y se congelan antes del experimento confirmatorio.
+## Paso 6. Cómo se mide
 
-**Episodio.** Inicia con el enjambre liberado en la entrada con posiciones aleatorias en la sección transversal y termina cuando una fracción $\eta_{\text{fin}}$ del enjambre ha salido del dominio o se alcanza el horizonte $H$.
-
-**Líneas base.** Heurística geométrica que aplica, en cada bifurcación, la fuerza máxima perpendicular a la línea central en dirección de la rama objetivo, y política aleatoria.
-
-**Regímenes y repeticiones.** Cinco regímenes de entrenamiento: fijo en R1, R2, R3 o R4, y currículo R1 → R4 que avanza al superar un umbral en validación.
-
-| Bloque | Configuración | Entrenamientos |
-|---|---|:---:|
-| Núcleo | PPO con 5 semillas | 25 |
-| Extensión | DreamerV3 y 10 semillas por régimen | hasta 100 |
-
-Cada política se evalúa en las cuatro condiciones y en todas las geometrías de prueba con 100 episodios por celda.
-
-## 5. Criterio preliminar de evaluación
-
-La métrica principal es la **eficiencia de direccionamiento**
+**Métrica principal: eficiencia de direccionamiento**
 
 $$
-\eta = \frac{N_{\text{obj}}}{N},
+\eta = \frac{N_{\text{obj}}}{N}
 $$
 
-fracción del enjambre entregada a la rama objetivo, medida en las geometrías de prueba para cada celda de la matriz entrenamiento × prueba:
-- **diagonal:** dentro del dominio;
-- **sobre la diagonal:** transferencia a mayor fidelidad;
-- **bajo la diagonal:** simplificación.
+Es la fracción del enjambre que llegó a la rama objetivo: 1 significa que llegaron todas y 0 que no llegó ninguna.
 
-**Aceptable.** La política supera a la heurística geométrica en al menos $\Delta\eta_{\min}$ en la geometría de validación; $\Delta\eta_{\min}$ se fija antes del experimento confirmatorio.
+**Métricas secundarias:**
 
-**Mejor.** Diferencias entre regímenes o algoritmos iguales o mayores que $\Delta\eta_{\min}$. Se reportan la media intercuartílica (IQM) con intervalos por *bootstrap* estratificado y la probabilidad de mejora (Agarwal et al., 2021). Los conteos por episodio se analizan con un modelo binomial de efectos mixtos con efectos fijos de algoritmo, régimen de entrenamiento, condición de prueba y sus interacciones, y efectos aleatorios de política y geometría; corrección de Holm con $\alpha = 0.05$.
-
-**Complementarias.** Fracción perdida en otras salidas, dispersión final del enjambre, tiempo de tránsito, esfuerzo de control, brecha de fidelidad $\eta_{\text{in}} - \eta_{\text{out}}$ y eficiencia muestral como área bajo la curva de aprendizaje con presupuesto fijo. El retorno acumulado se usa solo como diagnóstico y la estabilidad se mide con el rango intercuartílico entre semillas.
-
-## 6. Control experimental y reproducibilidad
-
-**Separación de datos.** Las particiones se hacen por paciente para evitar fuga entre geometrías del mismo individuo. Las geometrías de entrenamiento se muestrean al azar por episodio; la de validación ajusta hiperparámetros, recompensa y avance del currículo; las de prueba solo se usan en la evaluación final. La prueba piloto no forma parte del análisis confirmatorio.
-
-**Comparación equitativa.** Ambos algoritmos comparten entorno, observación, acción, recompensa, presupuesto de interacciones, frecuencia de evaluación y número de pruebas de ajuste de hiperparámetros. El tiempo de cómputo se reporta como propiedad de cada implementación (Stable-Baselines3 en PyTorch, Raffin et al., 2021, y DreamerV3 en JAX).
-
-**Preregistro y potencia.** Hipótesis, métricas, $\Delta\eta_{\min}$ y análisis se registran con fecha en el repositorio antes del experimento confirmatorio. El número de semillas se justifica con un análisis de potencia basado en la varianza observada en el piloto.
-
-**Versionado y registro.**
-- Código en Git y dependencias con versiones exactas.
-- Huellas SHA-256 de mallas y campos.
-- Un archivo YAML y un identificador único por ejecución (algoritmo, régimen, semilla).
-- Semillas fijas para NumPy, PyTorch/JAX, el entorno y el ruido browniano.
-- Curvas en TensorBoard y registros CSV por episodio (condición, geometría, conteos por salida, acciones, recompensa, motivo de fin), además del hardware y tiempos.
-- Los datos brutos no se modifican y las tablas y figuras se generan con scripts.
-- El entorno y las particiones se publicarán como benchmark abierto.
-
-## 7. Riesgos técnicos y mitigación
-
-| Riesgo | Detección y mitigación |
+| Métrica | Qué indica |
 |---|---|
-| Desvío físicamente inviable a escala anatómica ($ML/R \ll 1$) | Análisis adimensional previo al entrenamiento; de ser necesario, uso de la geometría escalada como fantoma microfluídico, declarado como supuesto |
-| Costo del CFD pulsátil en anatomía real | Regiones de interés recortadas; campos precomputados una vez y remuestreados en malla regular |
-| Costo de simular $N$ partículas | Integración vectorizada; $N$ fijado en el piloto según la convergencia de $\eta$ frente a $N$ |
-| Recompensa explotable | Distancia vascular; verificación con la línea base; revisión visual de trayectorias |
-| Fuga de información | Partición por paciente; geometrías de prueba aisladas desde el inicio |
-| Alta varianza entre semillas | IQM, *bootstrap* estratificado, curvas individuales; ninguna ejecución se elimina por bajo desempeño |
-| Costo de DreamerV3 o falta de datos experimentales para validar | DreamerV3 como extensión condicionada al costo medido en el piloto; si no hay datos comparables, el modelo se reporta como verificado y no validado |
+| Fracción perdida en otras ramas | Cuánto del enjambre se desvió |
+| Tiempo de tránsito | Cuánto tarda el enjambre en llegar |
+| Esfuerzo de control | Cuánta fuerza de control se aplicó |
+| Eficiencia muestral | Qué tan rápido aprende la política (área bajo la curva de aprendizaje) |
+| Estabilidad entre semillas | Si el resultado se repite al entrenar de nuevo con otra semilla |
 
-## 8. Viabilidad
+El retorno acumulado (la suma de recompensas) se usa solo como diagnóstico, no como resultado.
 
-El flujo usa herramientas abiertas (SimVascular, Python, Gymnasium (Towers et al., 2024), Stable-Baselines3 y DreamerV3) y se ejecuta por niveles:
+**Estadística.** Cada configuración se entrena con varias semillas. Se reporta la media intercuartílica (IQM) con intervalos de confianza por *bootstrap* (Agarwal et al., 2021), porque en RL los resultados varían mucho de una semilla a otra.
 
-1. **Primero:** el entorno en una geometría con la línea base y la verificación física.
-2. **Luego:** el núcleo con PPO.
-3. **Finalmente:** las extensiones.
+## Paso 7. Plan y estado actual
 
-Si solo se completa el núcleo, la tesis responde igualmente sus preguntas principales.
+| # | Etapa | Qué se hace | Estado |
+|:---:|---|---|:---:|
+| 1 | **Sprint 1: entorno y EDA** | Entorno mínimo v0.1, políticas de referencia y análisis exploratorio ([informe](docs/eda_baseline.md)) | Hecho |
+| 2 | **Sprint 2: arreglar el simulador** | Tres correcciones, una por experimento (ver abajo) ([informe](notebooks/sem5_avance.ipynb)) | Hecho |
+| 3 | **Piloto** | 3 semillas, una geometría, entrenamiento corto: PPO en R1–R4 y currículo simple | Pendiente |
+| 4 | **Experimento completo** | PPO por nivel, PPO con currículo y matriz de evaluación cruzada | Pendiente |
+| 5 | **Extensión** | DreamerV3, si el costo medido en el piloto lo permite | Pendiente |
+| 6 | **Etapa 2** | Comprobación en anatomías reales con SimVascular | Pendiente |
 
-## 9. Ejecución
+**Sprint 2 en detalle.** El EDA encontró tres fallas que se corrigieron antes de entrenar. Se aplicó una corrección por variante, comparando cada una con la anterior con las mismas semillas. Los resultados son con semillas de reporte, nunca usadas para decidir:
 
-Estado actual: entorno mínimo v0.1 (bifurcación en Y 2D con flujo analítico) y políticas de referencia. Diseño en [docs/diseno_entorno.md](docs/diseno_entorno.md), resultados del primer sprint en [docs/eda_baseline.md](docs/eda_baseline.md) y decisiones en [docs/bitacora.md](docs/bitacora.md).
+| Variante | Cambio | Problema que resuelve | Resultado |
+|---|---|---|---|
+| Baseline | Entorno v0.1 | — | — |
+| Var1 | Recompensa corregida | La recompensa se podía "engañar" | Correlación recompensa–η de 0.72 a 0.98 en R2 |
+| Var2 | + radio de partícula | Las partículas se pegaban a la pared de forma irreal | η de la heurística perpendicular en R2: de 0.00 a 0.95 |
+| Var3 | + pulso fuerte y lento | R3 daba los mismos resultados que R2 | No cumple con heurísticas: R3 sigue igual a R2; se verifica con PPO en el piloto |
 
-**Instalación** (Python 3.10+, Windows PowerShell):
+**El piloto no busca probar la hipótesis.** Verifica que PPO aprende, que los niveles son realmente distintos, que el currículo avanza, que la recompensa acompaña a η y que el costo de cómputo es viable.
+
+## Paso 8. Cómo ejecutarlo
+
+Requisitos: Python 3.10 o superior. Los comandos son para Windows PowerShell.
+
+**1. Instalar** (una sola vez):
 
 ```powershell
 python -m venv .venv
@@ -212,21 +224,32 @@ pip install -r requirements.txt
 pip install -e . --no-deps
 ```
 
-**Evaluación de las políticas de referencia** en R1–R4 (~2 min):
+**2. Ver el informe del sprint actual (recomendado).** Abrir [notebooks/sem5_avance.ipynb](notebooks/sem5_avance.ipynb) en VS Code o Jupyter y ejecutar *Run All* (~10 min). El notebook explica cada paso y recalcula todos los resultados. Requiere además `pip install ipykernel`.
+
+**3. O evaluar sin el notebook** las políticas de referencia en R1–R4:
 
 ```powershell
-python scripts/evaluate.py --tag baseline --episodes 30
+python scripts/evaluate.py --all              # baseline + 3 variantes del Sprint 2 (~6 min)
+python scripts/evaluate.py --variant var3     # solo el entorno resultante
 ```
 
-Escribe `logs/metrics_baseline.txt` (metadatos, configuración y η con IC 95 %) y `results/tables/episodes_baseline.csv` (una fila por episodio). Opciones: `--policies`, `--conditions`, `--seed`, `--n-particles`, `--v-mag`.
+Cada variante genera:
+- `logs/metrics_sprint2_<variante>.txt`: configuración, versiones, η de cada política en cada nivel con IC 95 %, métricas secundarias y alineación recompensa–η.
+- `results/tables/episodes_sprint2_<variante>.csv`: una fila por episodio.
 
-**EDA del entorno** (~4 min, requiere la evaluación anterior):
+**Reproducibilidad.** Las semillas están separadas en dos particiones: **ajuste** (5000–5019), para tomar decisiones, y **reporte** (9000–9029), solo para los resultados. Todas las políticas usan las mismas semillas. Cada log guarda la fecha, el commit de git, las versiones de los paquetes y la configuración completa. El EDA del Sprint 1 se reproduce con `python scripts/eda.py`.
 
-```powershell
-python scripts/eda.py
-```
+### Mapa del repositorio
 
-Escribe `logs/metrics_eda.txt`, las figuras en `results/figures/` y las tablas en `results/tables/`.
+| Carpeta | Contenido |
+|---|---|
+| `src/nanoswarm/envs/` | El entorno: geometría y dinámica, observación, recompensa |
+| `src/nanoswarm/baselines/` | Políticas de referencia (aleatoria y heurísticas geométricas) |
+| `src/nanoswarm/agents/`, `curriculum.py` | PPO, DreamerV3 y currículo (por implementar) |
+| `scripts/` | Evaluación, EDA y entrenamiento |
+| `logs/`, `results/` | Métricas, tablas y figuras generadas por los scripts |
+| `docs/` | Planteamiento, bitácora de decisiones, diseño del entorno e informes de cada sprint |
+| `cfd/`, `data/`, `validation/` | Reservadas para la etapa 2 (SimVascular) |
 
 ## Referencias
 

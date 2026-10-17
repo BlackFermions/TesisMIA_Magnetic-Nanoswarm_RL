@@ -1,0 +1,27 @@
+# Sprint 2: comparación de variantes (semillas de reporte 9000–9029)
+
+## Metadatos
+{
+  "fecha": "2026-10-16T19:17:27",
+  "git_commit": "b8fc348 (con cambios sin commit)",
+  "python": "3.12.7",
+  "plataforma": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.5.3",
+  "gymnasium": "1.4.0",
+  "pandas": "3.0.6"
+}
+
+## Tabla estándar
+                                            cambio  η R1  η R2  η R3  η R4  η perp. R2  |η R3 − η R2|  ρ mín R2–R3  pérdida  tránsito  esfuerzo  costo (s)
+variante                                                                                                                                                  
+baseline                   Entorno v0.1 (Sprint 1) 0.976 0.952 0.951 0.916       0.000          0.001        0.545    0.009    20.166     1.000     94.343
+var1                          Recompensa corregida 0.976 0.952 0.951 0.916       0.000          0.001        0.970    0.009    20.166     1.000     96.090
+var2               + radio de partícula a = 0.05 W 0.980 0.955 0.956 0.918       0.950          0.001        0.860    0.009    16.973     1.000     83.236
+var3      + pulso fuerte y lento (A = 0.9, T = 20) 0.980 0.955 0.954 0.871       0.950          0.001        0.860    0.020    15.608     1.000     80.995
+
+## Criterios
+                                                         baseline var1 var2 var3
+1. ρ ≥ 0.9 en R2 y R3                                           ✗    ✓    ✗    ✗
+1b. Sin inversiones claras retorno/η (chequeo posterior)        ✗    ✓    ✓    ✓
+2. Sin atasco en pared (η perp. R2 > 0.5)                       ✗    ✗    ✓    ✓
+3. η(R3) ≠ η(R2) en ambas heurísticas                           ✗    ✗    ✗    ✗

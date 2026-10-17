@@ -2,8 +2,8 @@
 
 ## Metadatos
 {
-  "fecha": "2026-10-09T19:21:02",
-  "git_commit": "54bb362 (con cambios sin commit)",
+  "fecha": "2026-10-09T20:01:35",
+  "git_commit": "d3b58ab (con cambios sin commit)",
   "python": "3.12.7",
   "plataforma": "Windows-11-10.0.26200-SP0",
   "numpy": "2.5.3",
@@ -89,4 +89,4 @@ condition      policy   eta  return  r_progress  r_target  r_other  r_effort
        R4   heur_perp 0.883   1.690       0.922     0.883   -0.068    -0.046
        R4 heur_branch 0.920   1.683       0.956     0.920   -0.032    -0.161
 
-Tiempo total: 273.2 s
+Tiempo total: 651.3 s
