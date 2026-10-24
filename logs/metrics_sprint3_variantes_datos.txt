@@ -1,0 +1,43 @@
+# Sprint 3: variantes de los datos (PPO entrenado en R3, semillas de reporte 9000–9029)
+
+## Metadatos
+{
+  "fecha": "2026-10-23T19:15:20",
+  "git_commit": "3bdad25 (con cambios sin commit)",
+  "python": "3.12.7",
+  "plataforma": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.5.3",
+  "gymnasium": "1.4.0",
+  "pandas": "3.0.6"
+}
+
+## Configuración PPO
+{
+  "timesteps": 300000,
+  "learning_rate": 0.0003,
+  "n_envs": 4,
+  "n_steps": 512,
+  "batch_size": 256,
+  "gamma": 0.995,
+  "env_variant": "var3"
+}
+
+## Tabla estándar
+                        n features  η R1  η R2  η R3  η R4  brecha R3→R2  brecha R3→R4  pérdida R3  tránsito R3  esfuerzo R3  efic. muestral  desv. entre semillas  costo (min)
+experimento                                                                                                                                                                    
+Baseline (11 features)          11 0.335 0.892 0.968 0.888         0.075         0.079       0.000        6.318        0.988           0.926                 0.010       19.146
+Var1 · + margen                 12 0.000 0.957 0.966 0.893         0.008         0.073       0.000        6.328        0.974           0.932                 0.005       19.247
+Var2 · − fase                    9 0.972 0.960 0.965 0.868         0.004         0.097       0.000        6.591        1.000           0.924                 0.011       18.081
+
+## η por semilla de entrenamiento
+condition                 R1    R2    R3    R4
+feature_set train_seed                        
+base        0          0.973 0.953 0.973 0.915
+            1          0.033 0.769 0.973 0.902
+            2          0.000 0.955 0.956 0.847
+margen      0          0.000 0.954 0.966 0.894
+            1          0.000 0.951 0.970 0.886
+            2          0.000 0.968 0.961 0.899
+sin_fase    0          0.968 0.972 0.977 0.865
+            1          0.973 0.954 0.961 0.875
+            2          0.975 0.956 0.957 0.864

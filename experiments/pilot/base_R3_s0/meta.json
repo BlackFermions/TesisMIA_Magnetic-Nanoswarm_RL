@@ -1,0 +1,16 @@
+{
+  "feature_set": "base",
+  "condition": "R3",
+  "seed": 0,
+  "train_seed": 1000,
+  "train_seconds": 1151.714002609253,
+  "config": {
+    "timesteps": 300000,
+    "learning_rate": 0.0003,
+    "n_envs": 4,
+    "n_steps": 512,
+    "batch_size": 256,
+    "gamma": 0.995,
+    "env_variant": "var3"
+  }
+}

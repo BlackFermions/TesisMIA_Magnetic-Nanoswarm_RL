@@ -273,3 +273,31 @@ Informe ejecutable: [notebooks/sprint2_arreglos_simulador.ipynb](../notebooks/sp
 **Decisión:** $F_{\max}$ es un parámetro idealizado y fijo del proyecto ($F_{\max} = 0.3$), no algo a ajustar. Se retira la Var4 (entrada 19). El entorno resultante del Sprint 2 es la **Var3**: recompensa corregida + radio de partícula + pulso fuerte y lento. Con heurísticas, R3 sigue igual a R2; la verificación con un agente que observa la fase del pulso queda para el piloto con PPO. Informe: [notebooks/sem5_avance.ipynb](../notebooks/sem5_avance.ipynb).
 
 **Estado:** `Decidido` (reemplaza la decisión sobre Var4 de la entrada 19)
+
+---
+
+## 2026-10-23 — Sprint 3: EDA + feature engineering + variantes de los datos (primer PPO)
+
+Informe ejecutable: [notebooks/sem6_eda_fe_variantes.ipynb](../notebooks/sem6_eda_fe_variantes.ipynb). Log: `logs/metrics_sprint3_variantes_datos.txt`. Corridas: `experiments/pilot/`.
+
+### 23. Primer entrenamiento con PPO
+
+**Decisión:** PPO (Stable-Baselines3) con α = 3·10⁻⁴ constante, γ = 0.995, 4 entornos, 300 000 pasos por corrida y observación normalizada con `VecNormalize` (μ y σ solo de entrenamiento, congeladas al evaluar). Entrenado en R3 (entorno Var3 del Sprint 2), 3 semillas por experimento. Las semillas de entrenamiento (100 000+) son disjuntas de las de ajuste y reporte.
+
+**Resultado:** PPO aprende en las 9 corridas. η en R3 ≈ 0.97, por encima de la heurística rama (0.95). Costo: ~19 min por corrida con 8 en paralelo.
+
+**Estado:** `Decidido`
+
+### 24. Variantes de los datos (observación)
+
+| Experimento | η R3 | η R1 | η R2 | η R4 |
+|---|---|---|---|---|
+| Baseline (11 features) | 0.968 | 0.335 (1 de 3 semillas transfiere) | 0.892 | 0.888 |
+| + margen de control | 0.966 | 0.000 | 0.957 | 0.893 |
+| − fase del pulso | 0.965 | 0.972 | 0.960 | 0.868 |
+
+**Hallazgo:** en el nivel de entrenamiento los tres rinden igual; fuera de él, la observación cambia la generalización. El margen, que identifica el nivel, queda fuera de distribución en R1 y la política falla. Quitar la fase mejora la transferencia a R1–R2.
+
+**Decisión:** observación sin fase como candidata para la matriz πRi(Rj); se descarta el margen en su forma actual. Con 3 semillas es un indicio, no un resultado confirmatorio.
+
+**Estado:** `Decidido` (provisional; se confirma en la matriz completa)
