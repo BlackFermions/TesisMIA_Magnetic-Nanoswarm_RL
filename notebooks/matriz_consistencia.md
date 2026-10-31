@@ -4,7 +4,6 @@ Tesis: Generalización de políticas de aprendizaje por refuerzo ante diferentes
 
 Alumno: Brayan Bruce Pérez Escobar
 
-Cada objetivo indica cuándo se considera logrado y cada hipótesis cuándo se confirma. Los umbrales comunes están al final.
 
 | Problema | Objetivos | Hipótesis | Variables | Indicadores |
 |---|---|---|---|---|
@@ -15,18 +14,4 @@ Cada objetivo indica cuándo se considera logrado y cada hipótesis cuándo se c
 | | Objetivo específico 4: Medir la importancia por permutación de cada variable de la observación en los niveles de entrenamiento y de evaluación, e identificar las variables con importancia negativa fuera del nivel de entrenamiento.<br><br>Logrado si se obtiene la importancia de todas las variables, para todas las políticas de la matriz, en los cuatro niveles. | Hipótesis específica 4: Las variables cuyo significado depende del nivel (fase del pulso, margen de control) tienen importancia de −0.05 o menor fuera del nivel de entrenamiento, y al quitarlas de la observación el FidelityGap medio baja en al menos 0.05.<br><br>Se refuta si al quitarlas la brecha no baja en 0.05. | Var. independiente: conjunto de variables de la observación.<br><br>Var. dependiente: transferencia entre niveles. | Importancia por permutación (η original − η permutado), FidelityGap con y sin las variables, estabilidad del ranking entre semillas (Spearman). |
 | | Objetivo específico 5 (extensión): Entrenar DreamerV3 con el mismo protocolo que PPO y construir su matriz 4×4.<br><br>Logrado si se completa la matriz de DreamerV3 con 10 semillas dentro del presupuesto computacional del proyecto. Si el costo lo impide, se reporta como no logrado y la tesis se cierra con los objetivos 1 a 4. | Hipótesis específica 5: DreamerV3 tiene un FidelityGap medio al menos 0.05 menor que PPO, con IC 95 % que no incluye el 0, bajo el protocolo estudiado.<br><br>Se refuta si la diferencia es menor a 0.05 o su IC 95 % incluye el 0. | Var. independiente: algoritmo (PPO o DreamerV3).<br><br>Var. dependiente: robustez ante el cambio de fidelidad. | FidelityGap medio, η en la matriz, eficiencia muestral, costo computacional (horas de CPU o GPU). |
 
-## Umbrales comunes
 
-La diferencia mínima relevante es Δη = 0.05, es decir 5 puntos porcentuales de partículas entregadas. Diferencias menores se consideran sin relevancia práctica aunque sean estadísticamente significativas.
-
-Cada configuración se entrena con 10 semillas. Los intervalos de confianza son IC 95 % por bootstrap sobre las semillas de entrenamiento.
-
-Las decisiones de diseño (variables de la observación, criterio de avance del currículo, hiperparámetros) se toman con las semillas de ajuste. Los resultados que confirman o refutan las hipótesis se miden solo con las semillas de reporte.
-
-## Definición de los indicadores
-
-η es la fracción de partículas del enjambre que llegan a la rama objetivo al final del episodio. Es la métrica principal.
-
-FidelityGap es la brecha de fidelidad: cuánto cae η cuando una política entrenada en el nivel Ri se evalúa en otro nivel Rj, FidelityGap = η(Ri, Ri) − η(Ri, Rj). El FidelityGap medio es el promedio sobre los niveles Rj distintos del de entrenamiento. Para la política con currículo se toma como nivel de entrenamiento R4, que es el último nivel del currículo.
-
-Las métricas secundarias son la fracción perdida en la otra rama, el tiempo de tránsito, el esfuerzo de control (magnitud acumulada de la fuerza aplicada), la eficiencia muestral (área bajo la curva de aprendizaje) y la estabilidad entre semillas (desviación estándar entre semillas de entrenamiento).
