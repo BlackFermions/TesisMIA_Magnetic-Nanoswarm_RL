@@ -1,0 +1,148 @@
+# Métricas: sprint4_importancia
+
+## Metadatos
+{
+  "fecha": "2026-10-30T19:00:56",
+  "git_commit": "fb938e6 (con cambios sin commit)",
+  "python": "3.12.7",
+  "plataforma": "Windows-11-10.0.26300-SP0",
+  "numpy": "2.5.3",
+  "gymnasium": "1.4.0",
+  "pandas": "3.0.6"
+}
+
+## Configuración
+{
+  "corridas": [
+    "base_R3_s0",
+    "base_R3_s1",
+    "base_R3_s2",
+    "margen_R3_s0",
+    "margen_R3_s1",
+    "margen_R3_s2",
+    "sin_fase_R3_s0",
+    "sin_fase_R3_s1",
+    "sin_fase_R3_s2"
+  ],
+  "niveles": [
+    "R3",
+    "R1"
+  ],
+  "semillas_episodio": "5000–5019",
+  "semillas_banco": "5500–5509",
+  "grupos": {
+    "centroide_x": [
+      "centroid_x"
+    ],
+    "centroide_y": [
+      "centroid_y"
+    ],
+    "dispersion_x": [
+      "spread_x"
+    ],
+    "dispersion_y": [
+      "spread_y"
+    ],
+    "fracciones": [
+      "frac_target",
+      "frac_other",
+      "frac_active"
+    ],
+    "fase": [
+      "phase_sin",
+      "phase_cos"
+    ],
+    "accion_previa_x": [
+      "prev_action_x"
+    ],
+    "accion_previa_y": [
+      "prev_action_y"
+    ],
+    "margen_control": [
+      "control_margin"
+    ]
+  },
+  "top": 5,
+  "umbral": 0.02
+}
+
+## η sin permutar
+                 conjunto  eta_R3  desv_R3  eta_R3_por_semilla  eta_R1  desv_R1  eta_R1_por_semilla  brecha_R3_R1
+0  Baseline (11 features)   0.964    0.008  0.97 / 0.97 / 0.95   0.333    0.553  0.97 / 0.03 / 0.00         0.631
+1         Var1 · + margen   0.967    0.004  0.97 / 0.97 / 0.96   0.000    0.000  0.00 / 0.00 / 0.00         0.967
+2           Var2 · − fase   0.966    0.008  0.97 / 0.96 / 0.96   0.969    0.004  0.97 / 0.97 / 0.97        -0.004
+
+## Importancia R3
+                 Baseline (11 features) · mean  Var1 · + margen · mean  Var2 · − fase · mean  Baseline (11 features) · std  Var1 · + margen · std  Var2 · − fase · std
+grupo                                                                                                                                                                 
+centroide_x                              0.003                  -0.007                 0.051                         0.008                  0.003                0.089
+centroide_y                              0.145                   0.005                 0.086                         0.184                  0.009                0.150
+dispersion_x                             0.007                   0.012                 0.018                         0.008                  0.005                0.033
+dispersion_y                             0.019                  -0.004                 0.012                         0.042                  0.004                0.017
+fracciones                               0.159                   0.041                 0.317                         0.227                  0.050                0.294
+fase                                     0.053                   0.239                   NaN                         0.036                  0.193                  NaN
+accion_previa_x                         -0.004                   0.002                 0.000                         0.003                  0.002                0.003
+accion_previa_y                          0.002                   0.002                 0.005                         0.005                  0.005                0.009
+margen_control                             NaN                  -0.003                   NaN                           NaN                  0.005                  NaN
+
+## Importancia R1
+                 Baseline (11 features) · mean  Var1 · + margen · mean  Var2 · − fase · mean  Baseline (11 features) · std  Var1 · + margen · std  Var2 · − fase · std
+grupo                                                                                                                                                                 
+centroide_x                              0.333                   0.000                -0.005                         0.553                  0.000                0.008
+centroide_y                              0.010                   0.000                 0.001                         0.969                  0.000                0.008
+dispersion_x                            -0.027                   0.000                 0.321                         0.063                  0.000                0.558
+dispersion_y                            -0.281                   0.000                 0.000                         0.488                  0.000                0.003
+fracciones                               0.007                   0.000                -0.003                         0.018                  0.000                0.003
+fase                                    -0.312                  -0.320                   NaN                         0.540                  0.555                  NaN
+accion_previa_x                         -0.362                   0.000                 0.000                         0.524                  0.000                0.002
+accion_previa_y                         -0.224                   0.000                -0.001                         0.380                  0.000                0.002
+margen_control                             NaN                  -0.322                   NaN                           NaN                  0.551                  NaN
+
+## Estabilidad entre semillas
+  feature_set                conjunto nivel  n_grupos                                                                top5_común  spearman_medio
+0        base  Baseline (11 features)    R1         8                                                               centroide_x          -0.154
+1        base  Baseline (11 features)    R3         8                                           centroide_y, dispersion_x, fase           0.429
+2      margen         Var1 · + margen    R1         9  accion_previa_x, accion_previa_y, centroide_x, centroide_y, dispersion_x           0.250
+3      margen         Var1 · + margen    R3         9                                            dispersion_x, fase, fracciones           0.722
+4    sin_fase           Var2 · − fase    R1         7                                             accion_previa_x, dispersion_y           0.067
+5    sin_fase           Var2 · − fase    R3         7                                                  dispersion_y, fracciones          -0.190
+
+## Tabla de decisión
+                  conjunto            grupo  imp_R3  desv_R3 top5_estable_R3  imp_R1  desv_R1 top5_estable_R1               patrón
+2   Baseline (11 features)      centroide_x   0.003    0.008              no   0.333    0.553              sí    solo la usa en R1
+3   Baseline (11 features)      centroide_y   0.145    0.184              sí   0.010    0.969              no         la usa en R3
+4   Baseline (11 features)     dispersion_x   0.007    0.008              sí  -0.027    0.063              no  estorba fuera de R3
+5   Baseline (11 features)     dispersion_y   0.019    0.042              no  -0.281    0.488              no  estorba fuera de R3
+7   Baseline (11 features)       fracciones   0.159    0.227              no   0.007    0.018              no         la usa en R3
+6   Baseline (11 features)             fase   0.053    0.036              sí  -0.312    0.540              no  estorba fuera de R3
+0   Baseline (11 features)  accion_previa_x  -0.004    0.003              no  -0.362    0.524              no  estorba fuera de R3
+1   Baseline (11 features)  accion_previa_y   0.002    0.005              no  -0.224    0.380              no  estorba fuera de R3
+10         Var1 · + margen      centroide_x  -0.007    0.003              no   0.000    0.000              sí             ignorada
+11         Var1 · + margen      centroide_y   0.005    0.009              no   0.000    0.000              sí             ignorada
+12         Var1 · + margen     dispersion_x   0.012    0.005              sí   0.000    0.000              sí             ignorada
+13         Var1 · + margen     dispersion_y  -0.004    0.004              no   0.000    0.000              no             ignorada
+15         Var1 · + margen       fracciones   0.041    0.050              sí   0.000    0.000              no         la usa en R3
+14         Var1 · + margen             fase   0.239    0.193              sí  -0.320    0.555              no  estorba fuera de R3
+8          Var1 · + margen  accion_previa_x   0.002    0.002              no   0.000    0.000              sí             ignorada
+9          Var1 · + margen  accion_previa_y   0.002    0.005              no   0.000    0.000              sí             ignorada
+16         Var1 · + margen   margen_control  -0.003    0.005              no  -0.322    0.551              no  estorba fuera de R3
+19           Var2 · − fase      centroide_x   0.051    0.089              no  -0.005    0.008              no         la usa en R3
+20           Var2 · − fase      centroide_y   0.086    0.150              no   0.001    0.008              no         la usa en R3
+21           Var2 · − fase     dispersion_x   0.018    0.033              no   0.321    0.558              no    solo la usa en R1
+22           Var2 · − fase     dispersion_y   0.012    0.017              sí   0.000    0.003              sí             ignorada
+23           Var2 · − fase       fracciones   0.317    0.294              sí  -0.003    0.003              no         la usa en R3
+17           Var2 · − fase  accion_previa_x   0.000    0.003              no   0.000    0.002              sí             ignorada
+18           Var2 · − fase  accion_previa_y   0.005    0.009              no  -0.001    0.002              no             ignorada
+
+## Hallazgos
+                 conjunto más importante en R3  imp_R3 más negativo en R1  imp_R1
+0  Baseline (11 features)           fracciones   0.159    accion_previa_x  -0.362
+1         Var1 · + margen                 fase   0.239     margen_control  -0.322
+2           Var2 · − fase           fracciones   0.317        centroide_x  -0.005
+
+## Meseta de las curvas de aprendizaje
+                 conjunto  eta_inicio (0–30k)  eta_final (270–300k)  cambio_ultimo_20%  desv_final_entre_semillas
+0  Baseline (11 features)               0.473                 0.963              0.000                      0.007
+1         Var1 · + margen               0.512                 0.965             -0.002                      0.004
+2           Var2 · − fase               0.484                 0.958             -0.000                      0.005
+

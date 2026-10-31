@@ -1,0 +1,4 @@
+conjunto,más importante en R3,imp_R3,más negativo en R1,imp_R1
+Baseline (11 features),fracciones,0.15941666666666657,accion_previa_x,-0.36241666666666666
+Var1 · + margen,fase,0.23933333333333326,margen_control,-0.322
+Var2 · − fase,fracciones,0.3169166666666667,centroide_x,-0.004833333333333334

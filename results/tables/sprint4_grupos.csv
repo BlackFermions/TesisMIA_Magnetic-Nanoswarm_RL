@@ -1,0 +1,25 @@
+conjunto,grupo,features
+Baseline (11 features),centroide_x,centroide_x
+Baseline (11 features),centroide_y,centroide_y
+Baseline (11 features),dispersion_x,dispersion_x
+Baseline (11 features),dispersion_y,dispersion_y
+Baseline (11 features),fracciones,"frac_entregada, frac_perdida, frac_activa"
+Baseline (11 features),fase,"fase_sen, fase_cos"
+Baseline (11 features),accion_previa_x,accion_previa_x
+Baseline (11 features),accion_previa_y,accion_previa_y
+Var1 · + margen,centroide_x,centroide_x
+Var1 · + margen,centroide_y,centroide_y
+Var1 · + margen,dispersion_x,dispersion_x
+Var1 · + margen,dispersion_y,dispersion_y
+Var1 · + margen,fracciones,"frac_entregada, frac_perdida, frac_activa"
+Var1 · + margen,fase,"fase_sen, fase_cos"
+Var1 · + margen,accion_previa_x,accion_previa_x
+Var1 · + margen,accion_previa_y,accion_previa_y
+Var1 · + margen,margen_control,margen_control
+Var2 · − fase,centroide_x,centroide_x
+Var2 · − fase,centroide_y,centroide_y
+Var2 · − fase,dispersion_x,dispersion_x
+Var2 · − fase,dispersion_y,dispersion_y
+Var2 · − fase,fracciones,"frac_entregada, frac_perdida, frac_activa"
+Var2 · − fase,accion_previa_x,accion_previa_x
+Var2 · − fase,accion_previa_y,accion_previa_y

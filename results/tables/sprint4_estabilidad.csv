@@ -1,0 +1,7 @@
+feature_set,conjunto,nivel,n_grupos,top5_común,spearman_medio
+base,Baseline (11 features),R1,8,centroide_x,-0.15423652068488658
+base,Baseline (11 features),R3,8,"centroide_y, dispersion_x, fase",0.42857142857142866
+margen,Var1 · + margen,R1,9,"accion_previa_x, accion_previa_y, centroide_x, centroide_y, dispersion_x",0.25
+margen,Var1 · + margen,R3,9,"dispersion_x, fase, fracciones",0.7222222222222223
+sin_fase,Var2 · − fase,R1,7,"accion_previa_x, dispersion_y",0.06736159843848752
+sin_fase,Var2 · − fase,R3,7,"dispersion_y, fracciones",-0.19026071528049945
