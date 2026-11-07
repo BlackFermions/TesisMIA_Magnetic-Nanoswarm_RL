@@ -159,15 +159,22 @@ def _trabajador(args):
 
 def buscar(estudio, sampler, n_trials=None, pasos_por_nivel=None, evaluar_cada=None, episodios=None,
            n_procesos=None):
-    """Corre una búsqueda completa con varios procesos en paralelo y devuelve la tabla de trials."""
+    """Corre una búsqueda completa con varios procesos en paralelo y devuelve la tabla de trials.
+
+    Si el estudio guardado ya tiene `n_trials` terminados, no entrena de nuevo: devuelve esos
+    resultados. Si está a medias, lo retoma. Para repetirla desde cero, borrar experiments/hpo/<estudio>.
+    """
     cfg = cargar_config()
     b, o = cfg["busqueda"], cfg["objetivo"]
     n_trials = n_trials or b["trials_por_busqueda"]
     n_procesos = min(n_procesos or b["trials_en_paralelo"], n_trials)
-    args = [(estudio, sampler, n_trials, pasos_por_nivel or o["pasos_por_nivel"], evaluar_cada or o["evaluar_cada"],
-             episodios or o["episodios_evaluacion"], w) for w in range(n_procesos)]
-    with ProcessPoolExecutor(max_workers=n_procesos) as pool:
-        list(pool.map(_trabajador, args))
+    terminados = sum(t.state.is_finished() for t in abrir_estudio(estudio, sampler, cfg).trials)
+    if terminados < n_trials:
+        args = [(estudio, sampler, n_trials, pasos_por_nivel or o["pasos_por_nivel"],
+                 evaluar_cada or o["evaluar_cada"], episodios or o["episodios_evaluacion"], w)
+                for w in range(n_procesos)]
+        with ProcessPoolExecutor(max_workers=n_procesos) as pool:
+            list(pool.map(_trabajador, args))
     tabla = tabla_trials(estudio, sampler)
     tabla.to_csv(SALIDA / estudio / "trials.csv", index=False)
     return tabla
