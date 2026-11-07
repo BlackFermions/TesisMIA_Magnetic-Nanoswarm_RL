@@ -1,0 +1,164 @@
+# Métricas: sprint5_hpo
+
+## Metadatos
+{
+  "fecha": "2026-11-06T18:42:55",
+  "git_commit": "008cd6e (con cambios sin commit)",
+  "python": "3.12.7",
+  "plataforma": "Windows-11-10.0.26300-SP0",
+  "numpy": "2.5.3",
+  "gymnasium": "1.4.0",
+  "pandas": "3.0.6"
+}
+
+## Configuración (configs/train/search.yaml)
+{
+  "fijo": {
+    "entorno": "var3",
+    "observacion": "sin_fase",
+    "red": [
+      64,
+      64
+    ],
+    "n_envs": 4,
+    "gae_lambda": 0.95,
+    "clip_range": 0.2,
+    "semilla_entrenamiento": 0
+  },
+  "espacio": {
+    "learning_rate": {
+      "tipo": "float",
+      "min": 0.0001,
+      "max": 0.001,
+      "log": true
+    },
+    "n_steps": {
+      "tipo": "categorico",
+      "valores": [
+        256,
+        512,
+        1024
+      ]
+    },
+    "batch_size": {
+      "tipo": "categorico",
+      "valores": [
+        64,
+        128,
+        256
+      ]
+    },
+    "n_epochs": {
+      "tipo": "categorico",
+      "valores": [
+        5,
+        10,
+        20
+      ]
+    },
+    "gamma": {
+      "tipo": "categorico",
+      "valores": [
+        0.99,
+        0.995,
+        0.999
+      ]
+    },
+    "ent_coef": {
+      "tipo": "float",
+      "min": 1e-05,
+      "max": 0.01,
+      "log": true
+    }
+  },
+  "control": {
+    "learning_rate": 0.0003,
+    "n_steps": 512,
+    "batch_size": 256,
+    "n_epochs": 10,
+    "gamma": 0.995,
+    "ent_coef": 0.0
+  },
+  "objetivo": {
+    "niveles": [
+      "R1",
+      "R2",
+      "R3",
+      "R4"
+    ],
+    "pasos_por_nivel": 100000,
+    "evaluar_cada": 10000,
+    "episodios_evaluacion": 5,
+    "metrica": "eficiencia_muestral",
+    "tambien_se_guarda": "eta_final"
+  },
+  "busqueda": {
+    "trials_por_busqueda": 20,
+    "trials_en_paralelo": 8,
+    "random": {
+      "sampler": "RandomSampler",
+      "semilla": 42
+    },
+    "poda": {
+      "pruner": "MedianPruner",
+      "trials_sin_poda": 5,
+      "evaluaciones_sin_poda": 2
+    }
+  },
+  "decision": {
+    "mejora_minima": 0.02,
+    "caida_max_eta_final": 0.01,
+    "respaldos": 2
+  }
+}
+
+## Trials por búsqueda
+busqueda  estado  
+random    COMPLETE     9
+          PRUNED      11
+
+## Control
+{
+  "eficiencia": 0.8746749999999999,
+  "eficiencia_std": 0.06910554126358705,
+  "eta_final": 0.9612499999999999,
+  "eficiencia_R1": 0.7998000000000001,
+  "eficiencia_R2": 0.8321,
+  "eficiencia_R3": 0.9357,
+  "eficiencia_R4": 0.9311,
+  "eta_final_R1": 0.998,
+  "eta_final_R2": 0.952,
+  "eta_final_R3": 0.97,
+  "eta_final_R4": 0.925,
+  "segundos": 2865.732682466507
+}
+
+## Top-k
+ búsqueda  trial_id                                                         parámetros eficiencia (media ± desv.)  eficiencia_R1  eta_final  minutos
+Aleatoria        12  α=7.4e-04, n_steps=512, batch=256, épocas=5, γ=0.995, ent=4.9e-03              0.870 ± 0.065          0.799      0.967   26.495
+Aleatoria         7   α=2.0e-04, n_steps=512, batch=64, épocas=20, γ=0.99, ent=2.6e-03              0.842 ± 0.109          0.684      0.950   61.493
+Aleatoria         1 α=1.3e-04, n_steps=256, batch=128, épocas=20, γ=0.995, ent=1.5e-05              0.811 ± 0.158          0.600      0.970   50.056
+Aleatoria         2  α=6.8e-04, n_steps=512, batch=128, épocas=20, γ=0.99, ent=2.2e-05              0.807 ± 0.201          0.507      0.853   50.877
+Aleatoria         4 α=6.1e-04, n_steps=1024, batch=128, épocas=10, γ=0.99, ent=1.7e-03              0.773 ± 0.202          0.478      0.949   50.007
+
+## Importancia (PED-ANOVA)
+n_steps          0.249
+gamma            0.234
+n_epochs         0.229
+ent_coef         0.157
+learning_rate    0.066
+batch_size       0.066
+
+## Decisión
+                                                  valor  umbral  cumple
+criterio                                                               
+Mejora en eficiencia muestral frente al control  -0.005  ≥ 0.02   False
+Caída del η final frente al control              -0.006  ≤ 0.01    True
+
+                                  learning_rate  n_steps  batch_size  n_epochs  gamma  ent_coef  eficiencia  eta_final
+rol                                                                                                                   
+control (Sprints 3 y 4), elegida      3.000e-04      512         256        10  0.995     0.000       0.875      0.961
+respaldo (trial 12)                   7.356e-04      512         256         5  0.995     0.005       0.870      0.967
+respaldo (trial 7)                    2.000e-04      512          64        20  0.990     0.003       0.842      0.950
+
+Tiempo del notebook: 1.9 min

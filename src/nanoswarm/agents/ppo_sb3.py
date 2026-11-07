@@ -30,6 +30,10 @@ class PPOConfig:
     n_steps: int = 512           # por entorno → 2048 transiciones por actualización
     batch_size: int = 256
     gamma: float = 0.995
+    # Valores por defecto de SB3 (los usados en los Sprints 3 y 4); el Sprint 5 los busca
+    n_epochs: int = 10
+    ent_coef: float = 0.0
+    gae_lambda: float = 0.95
     env_variant: str = "var3"    # entorno resultante del Sprint 2
 
 
@@ -60,16 +64,24 @@ def make_vec(feature_set, condition, seed, cfg):
     return DummyVecEnv([factory(i) for i in range(cfg.n_envs)])
 
 
+def make_model(feature_set, condition, seed, cfg=PPOConfig()):
+    """PPO sin entrenar sobre entornos vectorizados con observación normalizada."""
+    train_seed = TRAIN_SEED_BASE + seed
+    venv = VecNormalize(make_vec(feature_set, condition, train_seed, cfg),
+                        norm_obs=True, norm_reward=False, clip_obs=10.0)
+    return PPO("MlpPolicy", venv, learning_rate=cfg.learning_rate, n_steps=cfg.n_steps,
+               batch_size=cfg.batch_size, n_epochs=cfg.n_epochs, gamma=cfg.gamma,
+               gae_lambda=cfg.gae_lambda, ent_coef=cfg.ent_coef, seed=train_seed, verbose=0, device="cpu")
+
+
 def train(feature_set, condition, seed, out_dir, cfg=PPOConfig()):
     """Entrena una política y guarda modelo, estadísticas de normalización y curva."""
     torch.set_num_threads(1)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     train_seed = TRAIN_SEED_BASE + seed
-    venv = VecNormalize(make_vec(feature_set, condition, train_seed, cfg),
-                        norm_obs=True, norm_reward=False, clip_obs=10.0)
-    model = PPO("MlpPolicy", venv, learning_rate=cfg.learning_rate, n_steps=cfg.n_steps,
-                batch_size=cfg.batch_size, gamma=cfg.gamma, seed=train_seed, verbose=0, device="cpu")
+    model = make_model(feature_set, condition, seed, cfg)
+    venv = model.get_env()
 
     curve = CurveCallback()
     t0 = time.time()

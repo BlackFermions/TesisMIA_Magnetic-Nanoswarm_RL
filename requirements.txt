@@ -19,6 +19,9 @@ tzdata==2026.5
 # Sprint 3: agente PPO (torch CPU: pip install torch --index-url https://download.pytorch.org/whl/cpu)
 torch==2.14.1
 stable-baselines3==2.9.0
+# Sprint 5: búsqueda de hiperparámetros
+optuna==5.0.0
+scipy==1.18.1  # importancia de hiperparámetros (PED-ANOVA de Optuna)
 # Notebooks
 ipykernel==7.4.0
 nbformat==5.11.1

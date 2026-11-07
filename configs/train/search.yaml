@@ -1,0 +1,52 @@
+# Búsqueda de hiperparámetros de PPO (Sprint 5).
+# Justificación de cada valor: notebooks/sem8_busqueda_hiperparametros.ipynb, sección 1.
+
+# Lo que no cambia entre trials
+fijo:
+  entorno: var3            # v0.2, congelado (Sprint 2)
+  observacion: sin_fase    # 9 features (decisión del Sprint 4)
+  red: [64, 64]            # MLP por defecto de SB3
+  n_envs: 4
+  gae_lambda: 0.95         # valor estándar de PPO
+  clip_range: 0.2          # valor estándar de PPO
+  semilla_entrenamiento: 0 # la misma en todos los trials, para comparar en igualdad
+
+# Espacio de búsqueda: 6 hiperparámetros
+espacio:
+  learning_rate: {tipo: float, min: 1.0e-4, max: 1.0e-3, log: true}  # constante, sin decaimiento
+  n_steps: {tipo: categorico, valores: [256, 512, 1024]}             # por entorno
+  batch_size: {tipo: categorico, valores: [64, 128, 256]}
+  n_epochs: {tipo: categorico, valores: [5, 10, 20]}
+  gamma: {tipo: categorico, valores: [0.99, 0.995, 0.999]}
+  ent_coef: {tipo: float, min: 1.0e-5, max: 1.0e-2, log: true}
+
+# Configuración actual (Sprints 3 y 4): se mide igual que un trial y se compara con la ganadora
+control:
+  learning_rate: 3.0e-4
+  n_steps: 512
+  batch_size: 256
+  n_epochs: 10
+  gamma: 0.995
+  ent_coef: 0.0
+
+# Cómo se mide cada trial
+objetivo:
+  niveles: [R1, R2, R3, R4]   # se entrena una política por nivel y se evalúa en su propio nivel
+  pasos_por_nivel: 100000   # en el Sprint 3 la curva en R3 llega a su meseta cerca de 100 000
+  evaluar_cada: 10000         # 10 evaluaciones intermedias por nivel
+  episodios_evaluacion: 5     # semillas de ajuste 5000–5004
+  metrica: eficiencia_muestral  # promedio de η en las evaluaciones intermedias, media de los 4 niveles
+  tambien_se_guarda: eta_final  # η de la última evaluación, por nivel
+
+# Presupuesto y búsqueda
+busqueda:
+  trials_por_busqueda: 20
+  trials_en_paralelo: 8
+  random: {sampler: RandomSampler, semilla: 42}
+  poda: {pruner: MedianPruner, trials_sin_poda: 5, evaluaciones_sin_poda: 2}  # n_warmup_steps de Optuna: se puede podar desde la 2.ª evaluación (20 000 pasos)
+
+# Decisión: la mejor configuración de la búsqueda reemplaza al control solo si cumple ambas
+decision:
+  mejora_minima: 0.02         # en eficiencia muestral frente al control
+  caida_max_eta_final: 0.01   # el η final no puede quedar más abajo que esto frente al control
+  respaldos: 2                # configuraciones de respaldo

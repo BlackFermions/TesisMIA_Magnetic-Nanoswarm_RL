@@ -1,0 +1,36 @@
+{
+  "hiperparametros": {
+    "learning_rate": 0.00010824018381500966,
+    "n_steps": 256,
+    "batch_size": 256,
+    "n_epochs": 10,
+    "gamma": 0.99,
+    "ent_coef": 0.00582938454299474
+  },
+  "ppo": {
+    "timesteps": 300000,
+    "learning_rate": 0.00010824018381500966,
+    "n_envs": 4,
+    "n_steps": 256,
+    "batch_size": 256,
+    "gamma": 0.99,
+    "n_epochs": 10,
+    "ent_coef": 0.00582938454299474,
+    "gae_lambda": 0.95,
+    "env_variant": "var3"
+  },
+  "fijo": {
+    "entorno": "var3",
+    "observacion": "sin_fase",
+    "red": [
+      64,
+      64
+    ],
+    "n_envs": 4,
+    "gae_lambda": 0.95,
+    "clip_range": 0.2,
+    "semilla_entrenamiento": 0
+  },
+  "semillas_evaluacion": "5000\u20135004",
+  "segundos": 299.1684350967407
+}

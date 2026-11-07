@@ -1,0 +1,6 @@
+búsqueda,trial_id,parámetros,eficiencia (media ± desv.),eficiencia_R1,eta_final,minutos
+Aleatoria,12,"α=7.4e-04, n_steps=512, batch=256, épocas=5, γ=0.995, ent=4.9e-03",0.870 ± 0.065,0.7994,0.96725,26.495429110527038
+Aleatoria,7,"α=2.0e-04, n_steps=512, batch=64, épocas=20, γ=0.99, ent=2.6e-03",0.842 ± 0.109,0.6845,0.95,61.49347788492839
+Aleatoria,1,"α=1.3e-04, n_steps=256, batch=128, épocas=20, γ=0.995, ent=1.5e-05",0.811 ± 0.158,0.5997,0.97,50.055679297447206
+Aleatoria,2,"α=6.8e-04, n_steps=512, batch=128, épocas=20, γ=0.99, ent=2.2e-05",0.807 ± 0.201,0.507,0.8527500000000001,50.87738202810287
+Aleatoria,4,"α=6.1e-04, n_steps=1024, batch=128, épocas=10, γ=0.99, ent=1.7e-03",0.773 ± 0.202,0.4785,0.94925,50.00699116786321
