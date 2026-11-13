@@ -1,36 +1,27 @@
 {
   "hiperparametros": {
-    "learning_rate": 0.000165157716399298,
-    "n_steps": 256,
-    "batch_size": 64,
+    "learning_rate": 0.0006465341366825348,
+    "n_steps": 512,
+    "batch_size": 256,
     "n_epochs": 20,
     "gamma": 0.999,
-    "ent_coef": 2.7960452085774686e-05
+    "ent_coef": 0.0050745233912541975,
+    "gae_lambda": 0.95
   },
-  "ppo": {
-    "timesteps": 300000,
-    "learning_rate": 0.000165157716399298,
-    "n_envs": 4,
-    "n_steps": 256,
-    "batch_size": 64,
-    "gamma": 0.999,
-    "n_epochs": 20,
-    "ent_coef": 2.7960452085774686e-05,
-    "gae_lambda": 0.95,
-    "env_variant": "var3"
-  },
-  "fijo": {
-    "entorno": "var3",
-    "observacion": "sin_fase",
-    "red": [
-      64,
-      64
-    ],
-    "n_envs": 4,
-    "gae_lambda": 0.95,
-    "clip_range": 0.2,
-    "semilla_entrenamiento": 0
-  },
-  "semillas_evaluacion": "5000\u20135004",
-  "segundos": 2808.561616897583
+  "conjunto": "sin_fase",
+  "semilla_ppo": 1000,
+  "semillas_entornos": [
+    1000,
+    1001,
+    1002,
+    1003
+  ],
+  "semillas_evaluacion": [
+    5000,
+    5001,
+    5002,
+    5003,
+    5004
+  ],
+  "segundos": 2906.029366493225
 }

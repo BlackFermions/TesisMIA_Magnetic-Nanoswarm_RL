@@ -1,0 +1,27 @@
+{
+  "hiperparametros": {
+    "learning_rate": 0.0001508160971731742,
+    "n_steps": 1024,
+    "batch_size": 256,
+    "n_epochs": 5,
+    "gamma": 0.999,
+    "ent_coef": 0.002483349609710675,
+    "gae_lambda": 0.95
+  },
+  "conjunto": "sin_fase",
+  "semilla_ppo": 1000,
+  "semillas_entornos": [
+    1000,
+    1001,
+    1002,
+    1003
+  ],
+  "semillas_evaluacion": [
+    5000,
+    5001,
+    5002,
+    5003,
+    5004
+  ],
+  "segundos": 2533.5842270851135
+}

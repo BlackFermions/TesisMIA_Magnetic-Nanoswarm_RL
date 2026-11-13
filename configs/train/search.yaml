@@ -1,5 +1,6 @@
-# Búsqueda de hiperparámetros de PPO (Sprint 5).
+# Búsqueda de hiperparámetros de PPO (Sprint 5, versión 2: 60 trials, sin poda, semillas explícitas).
 # Justificación de cada valor: notebooks/sem8_busqueda_hiperparametros.ipynb, sección 1.
+# La versión 1 (20 trials con poda) queda como historial en experiments/hpo/random_v1/ (con su search.yaml).
 
 # Lo que no cambia entre trials
 fijo:
@@ -9,7 +10,22 @@ fijo:
   n_envs: 4
   gae_lambda: 0.95         # valor estándar de PPO
   clip_range: 0.2          # valor estándar de PPO
-  semilla_entrenamiento: 0 # la misma en todos los trials, para comparar en igualdad
+
+# Semillas: se usan tal cual, sin sumarles nada. Ninguna se repite entre grupos.
+semillas:
+  # PPO: fija la inicialización de la red y la exploración (random, numpy y torch).
+  # La misma en todos los trials y niveles, para que la única diferencia entre trials sean los hiperparámetros.
+  ppo: 1000
+  # Primer episodio de cada uno de los 4 entornos de entrenamiento. SB3 las asigna como ppo + i
+  # (VecEnv.seed), así que no se eligen aparte: se escriben para dejarlas a la vista y el código
+  # comprueba que coinciden. Los episodios siguientes continúan el generador de cada entorno.
+  entornos_entrenamiento: [1000, 1001, 1002, 1003]
+  # Episodios con que se evalúa η en cada evaluación intermedia: partición de ajuste (5000–5019).
+  # Nunca las de reporte (9000–9029), que se reservan para los resultados finales.
+  evaluacion: [5000, 5001, 5002, 5003, 5004]
+  # Sampler de Optuna: una por proceso (8 en paralelo); si fueran iguales, los procesos propondrían
+  # las mismas configuraciones. Distintas de las de la versión 1 (42–49), para no repetir sus trials.
+  sampler: [100, 101, 102, 103, 104, 105, 106, 107]
 
 # Espacio de búsqueda: 6 hiperparámetros
 espacio:
@@ -33,17 +49,18 @@ control:
 objetivo:
   niveles: [R1, R2, R3, R4]   # se entrena una política por nivel y se evalúa en su propio nivel
   pasos_por_nivel: 100000   # en el Sprint 3 la curva en R3 llega a su meseta cerca de 100 000
-  evaluar_cada: 10000         # 10 evaluaciones intermedias por nivel
-  episodios_evaluacion: 5     # semillas de ajuste 5000–5004
+  evaluar_cada: 10000         # 10 evaluaciones intermedias por nivel, con las semillas de evaluación
   metrica: eficiencia_muestral  # promedio de η en las evaluaciones intermedias, media de los 4 niveles
   tambien_se_guarda: eta_final  # η de la última evaluación, por nivel
 
 # Presupuesto y búsqueda
 busqueda:
-  trials_por_busqueda: 20
+  trials_por_busqueda: 60   # Bergstra y Bengio (2012): 60 trials dan 95 % de probabilidad de tener uno en el 5 % mejor del espacio
   trials_en_paralelo: 8
-  random: {sampler: RandomSampler, semilla: 42}
-  poda: {pruner: MedianPruner, trials_sin_poda: 5, evaluaciones_sin_poda: 2}  # n_warmup_steps de Optuna: se puede podar desde la 2.ª evaluación (20 000 pasos)
+  sampler: RandomSampler
+  # Sin poda. En la versión 1, la nota parcial no ordenaba a los trials como la final hasta la
+  # 8.ª evaluación (Spearman 0.80); podar en la 4.ª o la 5.ª habría cortado al 2.º–4.º mejor.
+  poda: null
 
 # Decisión: la mejor configuración de la búsqueda reemplaza al control solo si cumple ambas
 decision:

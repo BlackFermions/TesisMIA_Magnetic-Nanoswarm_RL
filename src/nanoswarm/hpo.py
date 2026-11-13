@@ -22,7 +22,7 @@ import pandas as pd
 import torch
 import yaml
 
-from nanoswarm.agents.ppo_sb3 import PPOConfig, make_model
+from nanoswarm.agents.ppo_sb3 import PPOConfig, crear_modelo, semillas_entornos
 from nanoswarm.envs.features import FeatureSet
 from nanoswarm.evaluation import ROOT, episode_seeds, make_env
 from nanoswarm.utils.rollout import run_episode
@@ -73,10 +73,13 @@ def correr_trial(trial, hp, cfg, pasos_por_nivel, evaluar_cada, episodios, out_d
     Con `trial` reporta la eficiencia muestral acumulada y lanza TrialPruned si Optuna lo poda.
     """
     torch.set_num_threads(1)
-    fijo, niveles = cfg["fijo"], cfg["objetivo"]["niveles"]
+    fijo, niveles, semillas = cfg["fijo"], cfg["objetivo"]["niveles"], cfg["semillas"]
     ppo = ppo_config(hp, cfg)
-    seeds = episode_seeds("ajuste", episodios)
-    modelos = {c: make_model(fijo["observacion"], c, fijo["semilla_entrenamiento"], ppo) for c in niveles}
+    seeds = semillas["evaluacion"][:episodios]
+    assert not set(seeds) & set(episode_seeds("reporte")), "las semillas de reporte no se usan para decidir"
+    modelos = {c: crear_modelo(fijo["observacion"], c, semillas["ppo"], ppo) for c in niveles}
+    for m in modelos.values():
+        assert semillas_entornos(m) == semillas["entornos_entrenamiento"], semillas_entornos(m)
     filas = []
     t0 = time.time()
     try:
@@ -98,7 +101,8 @@ def correr_trial(trial, hp, cfg, pasos_por_nivel, evaluar_cada, episodios, out_d
             out_dir.mkdir(parents=True, exist_ok=True)
             curva.to_csv(out_dir / "curve.csv", index=False)
             meta = {"hiperparametros": hp, "ppo": dataclasses.asdict(ppo), "fijo": fijo,
-                    "semillas_evaluacion": f"{seeds[0]}–{seeds[-1]}", "segundos": time.time() - t0}
+                    "semilla_ppo": semillas["ppo"], "semillas_entornos": semillas["entornos_entrenamiento"],
+                    "semillas_evaluacion": seeds, "segundos": time.time() - t0}
             (out_dir / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
     return curva
 
@@ -127,12 +131,11 @@ def objetivo(cfg, estudio, pasos_por_nivel, evaluar_cada, episodios):
 
 
 def crear_sampler(nombre, cfg, trabajador=0):
-    b = cfg["busqueda"]
     # Cada proceso usa su propia semilla; con la misma, los procesos propondrían las mismas configuraciones
+    semilla = cfg["semillas"]["sampler"][trabajador]
     if nombre == "random":
-        return optuna.samplers.RandomSampler(seed=b["random"]["semilla"] + trabajador)
-    return optuna.samplers.TPESampler(seed=b["tpe"]["semilla"] + trabajador,
-                                      n_startup_trials=b["tpe"]["trials_aleatorios_iniciales"])
+        return optuna.samplers.RandomSampler(seed=semilla)
+    return optuna.samplers.TPESampler(seed=semilla)
 
 
 def abrir_estudio(estudio, sampler, cfg, trabajador=0):
@@ -142,8 +145,9 @@ def abrir_estudio(estudio, sampler, cfg, trabajador=0):
     storage = optuna.storages.JournalStorage(optuna.storages.journal.JournalFileBackend(
         path, lock_obj=optuna.storages.journal.JournalFileOpenLock(path)))
     poda = cfg["busqueda"]["poda"]
-    pruner = optuna.pruners.MedianPruner(n_startup_trials=poda["trials_sin_poda"],
-                                         n_warmup_steps=poda["evaluaciones_sin_poda"])
+    pruner = (optuna.pruners.NopPruner() if poda is None else
+              optuna.pruners.MedianPruner(n_startup_trials=poda["trials_sin_poda"],
+                                          n_warmup_steps=poda["evaluaciones_sin_poda"]))
     return optuna.create_study(storage=storage, study_name=estudio, direction="maximize",
                                sampler=crear_sampler(sampler, cfg, trabajador), pruner=pruner, load_if_exists=True)
 
@@ -168,10 +172,11 @@ def buscar(estudio, sampler, n_trials=None, pasos_por_nivel=None, evaluar_cada=N
     b, o = cfg["busqueda"], cfg["objetivo"]
     n_trials = n_trials or b["trials_por_busqueda"]
     n_procesos = min(n_procesos or b["trials_en_paralelo"], n_trials)
+    assert n_procesos <= len(cfg["semillas"]["sampler"]), "falta una semilla de sampler por proceso"
     terminados = sum(t.state.is_finished() for t in abrir_estudio(estudio, sampler, cfg).trials)
     if terminados < n_trials:
         args = [(estudio, sampler, n_trials, pasos_por_nivel or o["pasos_por_nivel"],
-                 evaluar_cada or o["evaluar_cada"], episodios or o["episodios_evaluacion"], w)
+                 evaluar_cada or o["evaluar_cada"], episodios or len(cfg["semillas"]["evaluacion"]), w)
                 for w in range(n_procesos)]
         with ProcessPoolExecutor(max_workers=n_procesos) as pool:
             list(pool.map(_trabajador, args))
@@ -186,7 +191,7 @@ def correr_control():
     o = cfg["objetivo"]
     t0 = time.time()
     curva = correr_trial(None, cfg["control"], cfg, o["pasos_por_nivel"], o["evaluar_cada"],
-                         o["episodios_evaluacion"], SALIDA / "control")
+                         len(cfg["semillas"]["evaluacion"]), SALIDA / "control")
     res = {k: float(v) for k, v in resumir(curva).items()}
     res["segundos"] = time.time() - t0
     (SALIDA / "control" / "resumen.json").write_text(json.dumps(res, indent=2), encoding="utf-8")
@@ -202,7 +207,7 @@ def tabla_trials(estudio, sampler):
         curva_path = SALIDA / estudio / f"trial_{t.number:03d}" / "curve.csv"
         curva = pd.read_csv(curva_path) if curva_path.exists() else pd.DataFrame({"evaluacion": [0], "paso": [0]})
         filas.append({"busqueda": sampler, "trial_id": t.number, "estado": t.state.name,
-                      "semilla": cfg["fijo"]["semilla_entrenamiento"],
+                      "semilla_ppo": cfg["semillas"]["ppo"],
                       "evaluaciones": curva["evaluacion"].max(), "pasos_por_nivel": curva["paso"].max(),
                       **t.params, "valor": t.value, **t.user_attrs,
                       "segundos": t.user_attrs.get("segundos",

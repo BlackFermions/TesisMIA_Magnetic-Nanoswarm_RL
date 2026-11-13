@@ -51,27 +51,28 @@ class CurveCallback(BaseCallback):
         return True
 
 
-def make_vec(feature_set, condition, seed, cfg):
+def make_vec(feature_set, condition, cfg):
+    # Sin semilla aquí: PPO(seed=s) fija la del primer episodio de cada entorno en s + i (VecEnv.seed)
     variant = VARIANTS[cfg.env_variant]
+    return DummyVecEnv([lambda: FeatureSet(make_env(variant, condition), feature_set) for _ in range(cfg.n_envs)])
 
-    def factory(rank):
-        def _make():
-            env = FeatureSet(make_env(variant, condition), feature_set)
-            env.reset(seed=seed * 100 + rank)
-            return env
-        return _make
 
-    return DummyVecEnv([factory(i) for i in range(cfg.n_envs)])
+def crear_modelo(feature_set, condition, semilla_ppo, cfg=PPOConfig()):
+    """PPO sin entrenar con la semilla dada tal cual; los entornos empiezan con semilla_ppo + i."""
+    venv = VecNormalize(make_vec(feature_set, condition, cfg), norm_obs=True, norm_reward=False, clip_obs=10.0)
+    return PPO("MlpPolicy", venv, learning_rate=cfg.learning_rate, n_steps=cfg.n_steps,
+               batch_size=cfg.batch_size, n_epochs=cfg.n_epochs, gamma=cfg.gamma,
+               gae_lambda=cfg.gae_lambda, ent_coef=cfg.ent_coef, seed=semilla_ppo, verbose=0, device="cpu")
+
+
+def semillas_entornos(model):
+    """Semillas del primer episodio de cada entorno (antes de learn, que las consume)."""
+    return list(model.get_env().venv._seeds)
 
 
 def make_model(feature_set, condition, seed, cfg=PPOConfig()):
-    """PPO sin entrenar sobre entornos vectorizados con observación normalizada."""
-    train_seed = TRAIN_SEED_BASE + seed
-    venv = VecNormalize(make_vec(feature_set, condition, train_seed, cfg),
-                        norm_obs=True, norm_reward=False, clip_obs=10.0)
-    return PPO("MlpPolicy", venv, learning_rate=cfg.learning_rate, n_steps=cfg.n_steps,
-               batch_size=cfg.batch_size, n_epochs=cfg.n_epochs, gamma=cfg.gamma,
-               gae_lambda=cfg.gae_lambda, ent_coef=cfg.ent_coef, seed=train_seed, verbose=0, device="cpu")
+    """Como crear_modelo, con la semilla de los Sprints 3–4: PPO usa TRAIN_SEED_BASE + seed."""
+    return crear_modelo(feature_set, condition, TRAIN_SEED_BASE + seed, cfg)
 
 
 def train(feature_set, condition, seed, out_dir, cfg=PPOConfig()):
